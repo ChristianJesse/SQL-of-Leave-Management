@@ -134,30 +134,6 @@ BEGIN
 				FROM tblHR_DepartmentUnit
 			WHERE DepartmentCode = @pDepartmentCode
 		END
-	--IF @pOption = 7 -- GET ALL EMPLOYEE WITH AND WITHOUT LEAVE QUOTA  
-	--	BEGIN
-
-	--	-- WITH QUOTA 
-	--	SELECT  A.UserName,A.IDNumber,A.LastName+', '+A.FirstName As EmployeeName,A.Position,A.DepartmentCode,A.UnitCode,A.CostCenter,b.*
-	--		FROM tblHR_PersonnelMaster A
-	--		JOIN tblHR_PersonnelLeaveBalance B ON A.IDNumber = B.IDNumber
-	--		JOIN @pTypeHRMLQLeaveTypes C ON B.LeaveCode = C.LeaveType
-	--		--JOIN @typeHRMLQLeaveTypes C ON B.LeaveCode = C.LeaveType
-	--			WHERE  A.DTSeparated IS NULL  
-	--			AND B.DTFrom = C.DTFrom AND B.DTTo = C.DTTO
-	--			AND DepartmentCode = @pDepartmentCode AND UnitCode LIKE '%'+ @pUnitCode +'%'
-
-	--	-- WITHOUT QUOTA
-	--	SELECT A.UserName, A.IDNumber, A.LastName + ', ' + A.FirstName AS EmployeeName, A.Position,  A.DepartmentCode, A.UnitCode, A.CostCenter
-	--		FROM tblHR_PersonnelMaster A 
-	--		CROSS JOIN @pTypeHRMLQLeaveTypes C
-	--		WHERE A.DTSeparated IS NULL 
-	--		AND NOT EXISTS ( SELECT 1 FROM tblHR_PersonnelLeaveBalance B WHERE B.IDNumber = A.IDNumber
-	--				  AND B.LeaveCode = C.LeaveType
-	--				  AND B.DTFrom = C.DTFrom
-	--				  AND B.DTTo = C.DTTo )
-	--		AND DepartmentCode = @pDepartmentCode AND UnitCode LIKE '%'+ @pUnitCode +'%'
-	--	END
 	IF @pOption = 7 -- GET ALL EMPLOYEE WITH AND WITHOUT LEAVE QUOTA  
 		BEGIN
 
