@@ -1,0 +1,112 @@
+<?xml version="1.0"?>
+<SqlWorkbenchSqlProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="HR_Scripts">
+  <Items>
+    <LogicalFolder Name="Connections" Type="2" Sorted="true">
+      <Items>
+        <ConnectionNode Name="ndessdev\ndessdev:NDCI\COOreto">
+          <Created>2026-05-05T08:42:08.5295395+08:00</Created>
+          <Type>SQL</Type>
+          <Server>ndessdev\ndessdev</Server>
+          <UserName />
+          <Authentication>Windows Authentication</Authentication>
+          <InitialDB />
+          <LoginTimeout>30</LoginTimeout>
+          <ExecutionTimeout>0</ExecutionTimeout>
+          <ConnectionProtocol>NotSpecified</ConnectionProtocol>
+          <ApplicationName />
+        </ConnectionNode>
+      </Items>
+    </LogicalFolder>
+    <LogicalFolder Name="Queries" Type="0" Sorted="true">
+      <Items>
+        <FileNode Name="000 - ROLLBACK.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>000 - ROLLBACK.sql</FullPath>
+        </FileNode>
+        <FileNode Name="001 - INSERT tblModule.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>001 - INSERT tblModule.sql</FullPath>
+        </FileNode>
+        <FileNode Name="002 - INSERT tblMenu.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>002 - INSERT tblMenu.sql</FullPath>
+        </FileNode>
+        <FileNode Name="003 - ALTER TABLE tblHR_AbsentType.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>003 - ALTER TABLE tblHR_AbsentType.sql</FullPath>
+        </FileNode>
+        <FileNode Name="101 - CREATE TABLE tblHRDivision.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>101 - CREATE TABLE tblHRDivision.sql</FullPath>
+        </FileNode>
+        <FileNode Name="102 - CREATE TABLE tblHRDepartment.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>102 - CREATE TABLE tblHRDepartment.sql</FullPath>
+        </FileNode>
+        <FileNode Name="103 - CREATE TABLE tblHRSectionHeader.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>103 - CREATE TABLE tblHRSectionHeader.sql</FullPath>
+        </FileNode>
+        <FileNode Name="104 - CREATE TABLE tblHRSectionDetails.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>104 - CREATE TABLE tblHRSectionDetails.sql</FullPath>
+        </FileNode>
+        <FileNode Name="105 - CREATE TABLE tblHRInOutRecords.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>105 - CREATE TABLE tblHRInOutRecords.sql</FullPath>
+        </FileNode>
+        <FileNode Name="106 - CREATE TYPE TypeHRInOutRecords.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>106 - CREATE TYPE TypeHRInOutRecords.sql</FullPath>
+        </FileNode>
+        <FileNode Name="spHR_ZKT.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>spHR_ZKT.sql</FullPath>
+        </FileNode>
+        <FileNode Name="SQLQuery1.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>SQLQuery1.sql</FullPath>
+        </FileNode>
+        <FileNode Name="SQLQuery2.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>SQLQuery2.sql</FullPath>
+        </FileNode>
+        <FileNode Name="test.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>test.sql</FullPath>
+        </FileNode>
+      </Items>
+    </LogicalFolder>
+    <LogicalFolder Name="Miscellaneous" Type="3" Sorted="true">
+      <Items />
+    </LogicalFolder>
+  </Items>
+</SqlWorkbenchSqlProject>

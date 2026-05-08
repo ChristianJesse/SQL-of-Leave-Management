@@ -1,0 +1,10 @@
+DROP TYPE TypeHRInOurRecords
+GO
+CREATE TYPE TypeHRInOurRecords AS TABLE
+( 
+ServerID VARCHAR(15)
+,IDNumber VARCHAR(10)
+, InOutStatus VARCHAR(18)
+, TimeInOut DATETIME
+);
+GO

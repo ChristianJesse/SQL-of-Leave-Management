@@ -1,0 +1,122 @@
+DECLARE @lMID INT; 
+SELECT @lMID = MID FROM tblModule WHERE ModuleCode = 'HR';
+
+DECLARE @lUser VARCHAR(50) = ORIGINAL_LOGIN();
+DECLARE @lTimeStamp DATETIME = GETDATE();
+
+IF @lMID IS NOT NULL
+BEGIN
+    BEGIN TRY
+        BEGIN TRAN;
+
+        DECLARE @ReferenceData TABLE (
+            RCategory VARCHAR(200),
+            RCode VARCHAR(50),
+            RValue VARCHAR(200),
+            RSwitch VARCHAR(10),
+            MID INT,
+            RDesc VARCHAR(200)
+        );
+
+        -- Reference data
+        INSERT INTO @ReferenceData (RCategory, RCode, RValue, RSwitch, MID, RDesc)
+        VALUES
+			-- Approval Status
+
+			('HR', 'CREATED'		,'CREATED'			, '0', @lMID, 'Created Status'),
+			('HR', 'FOR APPROVAL'	,'FOR APPROVAL'		, '0', @lMID, 'For Approval Status'),
+			('HR', 'APPROVED'		,'APPROVED'			, '0', @lMID, 'Approved Status'),
+			('HR', 'REJECTED'		,'REJECTED'			, '0', @lMID, 'Rejected Status'),
+			('HR', 'CANCELLED'		,'CANCELLED'		, '0', @lMID, 'Cancelled Status'),
+			('HR', 'POSTED'			,'POSTED'			, '0', @lMID, 'Posted Status'),
+
+			('HREmpG', 'PALA'			,'ALL'			, '0', @lMID, 'All Employee Group'),
+			('HREmpG', 'PALW'			,'WEEKLY'		, '0', @lMID, 'Weekly Employee Group'),
+			('HREmpG', 'PALM'			,'MONTHLY'		, '0', @lMID, 'Monthly Employee Group')
+
+			;
+
+
+
+
+        DECLARE @RCategory VARCHAR(200), @RCode VARCHAR(50), @RValue VARCHAR(200),
+                @RSwitch VARCHAR(10), @RDesc VARCHAR(200);
+
+        DECLARE cur CURSOR FOR
+            SELECT RCategory, RCode, RValue, RSwitch, RDesc
+            FROM @ReferenceData;
+
+        OPEN cur;
+        FETCH NEXT FROM cur INTO @RCategory, @RCode, @RValue, @RSwitch, @RDesc;
+
+        WHILE @@FETCH_STATUS = 0
+        BEGIN
+            -- BEFORE SELECT
+            PRINT '--- BEFORE ---';
+            SELECT 'BEFORE' AS [BEFORE], * 
+            FROM tblReferenceMaster
+            WHERE RCategory = @RCategory AND RCode = @RCode AND MID = @lMID;
+
+            IF EXISTS (
+                SELECT 1
+                FROM tblReferenceMaster
+                WHERE RCategory = @RCategory AND RCode = @RCode AND MID = @lMID
+            )
+            BEGIN
+                UPDATE tblReferenceMaster
+                SET RValue = @RValue,
+                    RSwitch = @RSwitch,
+                    RDesc = @RDesc,
+                    ModifiedBy = @lUser,
+                    ModifiedDate = @lTimeStamp
+                WHERE RCategory = @RCategory AND RCode = @RCode AND MID = @lMID;
+
+                PRINT 'Updated: ' + @RCategory + ' - ' + @RCode;
+				-- AFTER SELECT
+				PRINT '--- AFTER ---';
+				SELECT 'AFTER-UPDATE' AS [AFTER], * 
+				FROM tblReferenceMaster
+				WHERE RCategory = @RCategory AND RCode = @RCode AND MID = @lMID;
+            END
+            ELSE
+            BEGIN
+                INSERT INTO tblReferenceMaster
+                    (RCategory, RCode, RValue, RSwitch, MID, RDesc, DTCreated, CreatedBy)
+                VALUES
+                    (@RCategory, @RCode, @RValue, @RSwitch, @lMID, @RDesc, @lTimeStamp, @lUser);
+
+                PRINT 'Inserted: ' + @RCategory + ' - ' + @RCode;
+
+				-- AFTER SELECT
+				PRINT '--- AFTER ---';
+				SELECT 'AFTER-INSERT' AS [AFTER], * 
+				FROM tblReferenceMaster
+				WHERE RCategory = @RCategory AND RCode = @RCode AND MID = @lMID;
+            END
+
+
+
+            FETCH NEXT FROM cur INTO @RCategory, @RCode, @RValue, @RSwitch, @RDesc;
+        END
+
+        CLOSE cur;
+        DEALLOCATE cur;
+
+        COMMIT TRAN;
+
+
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRAN;
+        DECLARE @ErrMsg NVARCHAR(4000), @ErrSeverity INT;
+        SELECT @ErrMsg = ERROR_MESSAGE(), @ErrSeverity = ERROR_SEVERITY();
+        RAISERROR(@ErrMsg, @ErrSeverity, 1);
+    END CATCH
+END
+ELSE
+BEGIN
+    RAISERROR('ModuleCode ''HR'' not found in tblModule.', 16, 1);
+END
+
+
+
