@@ -19,11 +19,23 @@
     </LogicalFolder>
     <LogicalFolder Name="Queries" Type="0" Sorted="true">
       <Items>
+        <FileNode Name="000 - RollBack - tblHR_AbsentType.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>000 - RollBack - tblHR_AbsentType.sql</FullPath>
+        </FileNode>
         <FileNode Name="000 - ROLLBACK.sql">
           <AssociatedConnectionMoniker />
           <AssociatedConnSrvName />
           <AssociatedConnUserName />
           <FullPath>000 - ROLLBACK.sql</FullPath>
+        </FileNode>
+        <FileNode Name="000 RollBack - tblHR_PersonnelLeaveBalance.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>000 RollBack - tblHR_PersonnelLeaveBalance.sql</FullPath>
         </FileNode>
         <FileNode Name="001 - INSERT tblModule.sql">
           <AssociatedConnectionMoniker />
@@ -38,10 +50,34 @@
           <FullPath>002 - INSERT tblMenu.sql</FullPath>
         </FileNode>
         <FileNode Name="003 - ALTER TABLE tblHR_AbsentType.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>003 - ALTER TABLE tblHR_AbsentType.sql</FullPath>
+        </FileNode>
+        <FileNode Name="003 - ALTER TABLE tblHR_PersonnelLeaveBalance.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>003 - ALTER TABLE tblHR_PersonnelLeaveBalance.sql</FullPath>
+        </FileNode>
+        <FileNode Name="004 - ALTER TABLE tblHR_PersonnelLeaves.sql">
           <AssociatedConnectionMoniker />
           <AssociatedConnSrvName />
           <AssociatedConnUserName />
-          <FullPath>003 - ALTER TABLE tblHR_AbsentType.sql</FullPath>
+          <FullPath>004 - ALTER TABLE tblHR_PersonnelLeaves.sql</FullPath>
+        </FileNode>
+        <FileNode Name="005 - ALTER TABLE tblHR_WorkSchedule.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>005 - ALTER TABLE tblHR_WorkSchedule.sql</FullPath>
+        </FileNode>
+        <FileNode Name="006 - ALTER TABLE tblHR_WorkScheduleRD.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>006 - ALTER TABLE tblHR_WorkScheduleRD.sql</FullPath>
         </FileNode>
         <FileNode Name="101 - CREATE TABLE tblHRDivision.sql">
           <AssociatedConnectionMoniker />
@@ -79,9 +115,81 @@
           <AssociatedConnUserName />
           <FullPath>106 - CREATE TYPE TypeHRInOutRecords.sql</FullPath>
         </FileNode>
-        <FileNode Name="spHR_ZKT.sql">
+        <FileNode Name="106 - CREATE TYPE typeHRMLQLeaveTypes.sql">
           <AssociatedConnectionMoniker />
           <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>106 - CREATE TYPE typeHRMLQLeaveTypes.sql</FullPath>
+        </FileNode>
+        <FileNode Name="106 - CREATE TYPE typeHRMLQSelectedEmployee.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>106 - CREATE TYPE typeHRMLQSelectedEmployee.sql</FullPath>
+        </FileNode>
+        <FileNode Name="106 - CREATE TYPE TypeHRPostApproveLeaved.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>106 - CREATE TYPE TypeHRPostApproveLeaved.sql</FullPath>
+        </FileNode>
+        <FileNode Name="107 - CREATE TABLE tblHRLeaveReason.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>107 - CREATE TABLE tblHRLeaveReason.sql</FullPath>
+        </FileNode>
+        <FileNode Name="108 - UPDATE tblHR_AbsentType.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>108 - UPDATE tblHR_AbsentType.sql</FullPath>
+        </FileNode>
+        <FileNode Name="109 - INSERT INTO tblHRLeaveReason.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>109 - INSERT INTO tblHRLeaveReason.sql</FullPath>
+        </FileNode>
+        <FileNode Name="201 - CREATE TABLE tblHR_AbsentTypeLogs.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>201 - CREATE TABLE tblHR_AbsentTypeLogs.sql</FullPath>
+        </FileNode>
+        <FileNode Name="202 - CREATE TABLE tblHRLeaveReasonLogs.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>202 - CREATE TABLE tblHRLeaveReasonLogs.sql</FullPath>
+        </FileNode>
+        <FileNode Name="301 - CREATE TRIGGER trtblHR_AbsentTypeLogs.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>301 - CREATE TRIGGER trtblHR_AbsentTypeLogs.sql</FullPath>
+        </FileNode>
+        <FileNode Name="302 - CREATE TRIGGER trTblHRLeaveReasonLogs.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>302 - CREATE TRIGGER trTblHRLeaveReasonLogs.sql</FullPath>
+        </FileNode>
+        <FileNode Name="901 - INSERT tblReferenceMaster.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>901 - INSERT tblReferenceMaster.sql</FullPath>
+        </FileNode>
+        <FileNode Name="spAAM_HR.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>spAAM_HR.sql</FullPath>
+        </FileNode>
+        <FileNode Name="spHR_ZKT.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
           <AssociatedConnUserName />
           <FullPath>spHR_ZKT.sql</FullPath>
         </FileNode>
@@ -106,7 +214,14 @@
       </Items>
     </LogicalFolder>
     <LogicalFolder Name="Miscellaneous" Type="3" Sorted="true">
-      <Items />
+      <Items>
+        <FileNode Name="003 - ALTER TABLE tblHR_AbsentType">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>003 - ALTER TABLE tblHR_AbsentType</FullPath>
+        </FileNode>
+      </Items>
     </LogicalFolder>
   </Items>
 </SqlWorkbenchSqlProject>

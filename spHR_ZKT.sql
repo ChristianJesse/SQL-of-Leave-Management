@@ -27,9 +27,10 @@ CREATE OR ALTER PROCEDURE spHR_ZKT
 	@pOption					TINYINT
 	,@pUserName					VARCHAR(50) = NULL
 	,@pRCategory				VARCHAR(50) = NULL
-	,@pTypeHRInOurRecords		typeHRInOurRecords READONLY
-	,@pTypeHRPostApproveLeaved  typeHRPostApproveLeaved READONLY
-	,@pTypeHRMLQLeaveTypes		typeHRMLQLeaveTypes READONLY
+	,@pTypeHRInOurRecords				typeHRInOurRecords READONLY
+	,@pTypeHRPostApproveLeaved			typeHRPostApproveLeaved READONLY
+	,@pTypeHRMLQLeaveTypes				typeHRMLQLeaveTypes READONLY
+	,@ptypeHRMLQSelectedEmployee		typeHRMLQSelectedEmployee READONLY
 	,@pDepartmentCode			VARCHAR(50) = NULL
 	,@pUnitCode					VARCHAR(10) = NULL
 	,@pDTApplied				VARCHAR(10) = NULL
@@ -74,6 +75,10 @@ CREATE OR ALTER PROCEDURE spHR_ZKT
 	,@pEmpGroup					VARCHAR(10) = NULL
 	,@pPostRemarks				VARCHAR(MAX) = NULL
 
+	,@pDTFrom					datetime = NULL
+	,@pDTTo						datetime = NULL
+	,@pQuota					FLOAT	= NULL
+	,@pLeaveBalanceID			INT = NULL
 AS
 BEGIN
 
@@ -85,6 +90,18 @@ BEGIN
 			,@lIDNumber			VARCHAR(55)
 			,@lStartOfYear		DATE
 			,@lEndOfYear		DATE
+			,@lLeaveCode		VARCHAR(10)
+			,@lDTFrom			DATETIME
+			,@lDTTo				DATETIME
+			,@lQuota			FLOAT
+			,@lPeriods			VARCHAR(55)
+			,@lDTFromStr		VARCHAR(10)
+			,@lDTToStr			VARCHAR(10)
+			,@lLeaveUsed		TINYINT
+			,@lUserName			VARCHAR(100)
+			,@lErrorMessage		VARCHAR(MAX)
+			,@lErrorLine		INT
+
 
 	SET NOCOUNT ON;
 		SELECT @lMID = MID from tblModule WHERE ModuleCode = 'HR'
@@ -207,7 +224,7 @@ BEGIN
 
 			SELECT UserName, IDNumber, EmployeeName, Position, DepartmentCode, UnitCode, CostCenter,
 				STRING_AGG(CASE WHEN IsCovered = 0 THEN LeaveType END, ', ') AS LeaveType,
-				STRING_AGG(ISNULL(CAST(Quota AS VARCHAR(10)), '0'), ', ') AS Quota,
+				STRING_AGG( CASE  WHEN MissingPeriods IS NOT NULL  THEN ISNULL(CAST(Quota AS VARCHAR(10)), '0') END,  ', ') AS Quota,
 				STRING_AGG(MissingPeriods, ' | ') AS Periods,  --MissingPeriods
 				'WITHOUT QUOTA' AS Status
 		
@@ -220,7 +237,7 @@ BEGIN
 			DROP TABLE IF EXISTS #tmpTblQuota
 
 		END
-	IF @pOption = 8 -- GET User Info  ----------  EXEC spHR_ZKT @pOption = 23, @pEmpGroup ='PALA', @pDTLeave='2022-01-10 17:49:32.150'   
+	IF @pOption = 8 -- GET User Info  
 		BEGIN
 			SELECT UserName,IDNumber,LastName+', '+FirstName As EmployeeName,Position,DTBirth,DepartmentCode,UnitCode,CostCenter
 			FROM tblHR_PersonnelMaster
@@ -317,16 +334,16 @@ BEGIN
 
 			IF @pDTApplied IS NULL or @pDTApplied = ''
 				BEGIN
-					SET @pDTApplied = year(GETDATE()) - 1
+					SET @pDTApplied = year(GETDATE())
 				END
 
 			  SELECT a.LeaveCode, b.LeaveDesc, CONVERT(VARCHAR,a.DTFrom,101) AS DTFrom, CONVERT(VARCHAR,a.DTTo,101) AS DTTo, 
 			  a.Quota, a.LeaveBalance, CONVERT(VARCHAR,a.AppliedLeave,101) AS AppliedLeave, a.ForPosting, a.LeaveUsed, 
-					 a.Locked, a.LockedBy, a.LockedOn
+					 a.Locked, a.LockedBy, a.LockedOn,b.Dayspecific,A.LeaveBalanceID
 			  FROM tblHR_PersonnelLeaveBalance a LEFT JOIN tblHR_AbsentType b ON a.LeaveCode = b.LeaveCode 
 			  WHERE a.IDNumber = @pIDNumber and year(DTFROM) = @pDTApplied
 		END
-	IF @pOption = 11 -- CANCEL LEAVE
+	IF @pOption = 11 -- CANCEL LEAVE 
 		BEGIN
 			SELECT  * FROM tblHR_PersonnelLeaveBalance 
 			WHERE IDNumber = @pIDNumber 
@@ -689,6 +706,472 @@ BEGIN
 			WHERE  VL.Posted = 0
 
 		END
+	IF @pOption = 26 -- Save new leave quota MLQ 
+		BEGIN
+			BEGIN TRY
+				BEGIN TRANSACTION
+
+				DECLARE lCur_LeaveBalance CURSOR FOR
+
+					SELECT E.IDNumber, E.UserName, L.LeaveType, L.DTFrom, L.DTTo, L.Quota,
+						   CONVERT(VARCHAR(10), L.DTFrom, 120) + ' to ' + CONVERT(VARCHAR(10), L.DTTo, 120) AS Periods
+					FROM @pTypeHRMLQSelectedEmployee E
+					CROSS JOIN @pTypeHRMLQLeaveTypes L
+
+				OPEN lCur_LeaveBalance
+
+				FETCH NEXT FROM lCur_LeaveBalance INTO
+					@lIDNumber, @lUserName, @lLeaveCode, @lDTFrom, @lDTTo, @lQuota,@lPeriods
+
+				WHILE @@FETCH_STATUS = 0
+				BEGIN
+
+					IF EXISTS (	SELECT 1
+								FROM tblHR_PersonnelLeaveBalance
+								WHERE IDNumber = @lIDNumber
+								AND LeaveCode = @lLeaveCode
+								AND DTFrom = @lDTFrom
+								AND DTTo = @lDTTo )
+					BEGIN
+					SET @lDTFromStr = CONVERT(VARCHAR(10), @lDTFrom, 120)
+					SET @lDTToStr   = CONVERT(VARCHAR(10), @lDTTo, 120)
+
+						RAISERROR('Leave quota already exists. UserName : %s | LeaveCode : %s | DTFrom : %s | DTTo : %s',
+								   16,
+								   1,
+								   @lUserName,
+								   @lLeaveCode,
+								   @lDTFromStr,
+								   @lDTToStr)
+
+					END
+
+					INSERT INTO tblHR_PersonnelLeaveBalance (IDNumber  , LeaveCode  , DTFrom  , DTTo  , Quota             , LeaveBalance      , AppliedLeave, ForPosting, LeaveUsed , Locked, LockedBy, LockedOn,DTCreated,CreatedBy )
+													VALUES	(@lIDNumber, @lLeaveCode, @lDTFrom, @lDTTo, ISNULL(@lQuota, 0), ISNULL(@lQuota, 0), 0			, 0			, 0			, 0		, NULL	  , NULL	,GETDATE(),@pUserName )
+
+					FETCH NEXT FROM lCur_LeaveBalance INTO
+						@lIDNumber, @lUserName, @lLeaveCode, @lDTFrom, @lDTTo, @lQuota,@lPeriods
+
+				END
+
+				CLOSE lCur_LeaveBalance
+				DEALLOCATE lCur_LeaveBalance
+
+				COMMIT TRANSACTION
+
+			END TRY
+
+			BEGIN CATCH
+
+				IF @@TRANCOUNT > 0
+					ROLLBACK TRANSACTION
+
+				IF CURSOR_STATUS('local', 'lCur_LeaveBalance') >= -1
+				BEGIN
+					CLOSE lCur_LeaveBalance
+					DEALLOCATE lCur_LeaveBalance
+				END
+
+				SELECT
+					@lErrorMessage = ERROR_MESSAGE(),
+					@lErrorLine = ERROR_LINE()
+
+				RAISERROR( 'Error inserting leave balance. Line: %d | Message: %s', 16, 1, @lErrorLine, @lErrorMessage )
+
+			END CATCH
+
+		END
+	IF @pOption = 27 -- UPDATE MLQ Leave Balance 
+		BEGIN	
+			UPDATE tblHR_PersonnelLeaveBalance SET DTFrom = @PDTFrom , DTTo = @pDTTo , Quota = @pQuota, LastUpdateBy = @pUserName, DTModified = GETDATE()
+			WHERE IDNumber = @pIDNumber AND LeaveCode = @pLeaveCode AND LeaveBalanceID = @pLeaveBalanceID
+		END
+	IF @pOption = 28 -- DELETE MLQ Leave Balanve
+		BEGIN
+			SET @lUserName =(SELECT LastName+', '+FirstName As EmployeeName FROM tblHR_PersonnelMaster WHERE IDNumber = @pIDNumber )
+			SET @lLeaveUsed = (SELECT DISTINCT COUNT(A.LeaveBalanceid) FROM tblHR_PersonnelLeaveBalance A  
+					JOIN tblHR_PersonnelLeaves B ON A.IDNumber = B.IDNumber AND A.LeaveCode = B.LeaveCode
+					WHERE A.IDNumber = @pIDNumber
+					AND A.LeaveCode = @pLeaveCode 
+					AND B.DTApplied BETWEEN @PDTFrom  AND @pDTTo)
+
+
+			IF @lLeaveUsed >= 1
+				BEGIN
+						RAISERROR('Leave quota is already used by UserName : %s cannot be deleted.',
+								   16,
+								   1,
+								   @lUserName)
+				END
+			ELSE
+				BEGIN
+					DELETE tblHR_PersonnelLeaveBalance WHERE IDNumber = @pIDNumber AND LeaveCode = @pLeaveCode AND LeaveBalanceID = @pLeaveBalanceID
+				END
+		END
+	IF @pOption = 29 -- Bulk delete leave quota MLQ
+		BEGIN
+			BEGIN TRY
+				BEGIN TRANSACTION
+
+				DECLARE @lErrorUsers VARCHAR(MAX)
+
+				DECLARE lCur_LeaveBalance CURSOR FOR
+
+					SELECT E.IDNumber, E.UserName, L.LeaveType, L.DTFrom, L.DTTo
+					FROM @pTypeHRMLQSelectedEmployee E
+					CROSS JOIN @pTypeHRMLQLeaveTypes L
+
+				OPEN lCur_LeaveBalance
+
+				FETCH NEXT FROM lCur_LeaveBalance INTO
+					@lIDNumber, @lUserName, @lLeaveCode, @lDTFrom, @lDTTo
+
+				WHILE @@FETCH_STATUS = 0
+				BEGIN
+
+					SET @lLeaveUsed = (
+										SELECT COUNT(A.LeaveBalanceID)
+										FROM tblHR_PersonnelLeaveBalance A
+										JOIN tblHR_PersonnelLeaves B
+											ON A.IDNumber = B.IDNumber
+											AND A.LeaveCode = B.LeaveCode
+										WHERE A.IDNumber = @lIDNumber
+										AND A.LeaveCode = @lLeaveCode
+										AND B.DTApplied BETWEEN @lDTFrom AND @lDTTo
+										)
+
+					IF @lLeaveUsed >= 1
+					BEGIN
+
+						SET @lErrorUsers = ISNULL(@lErrorUsers + CHAR(10), '') +
+										   'UserName : ' + @lUserName +
+										   ' | LeaveCode : ' + @lLeaveCode
+
+					END
+					ELSE
+					BEGIN
+
+						DELETE tblHR_PersonnelLeaveBalance
+						WHERE IDNumber = @lIDNumber
+						AND LeaveCode = @lLeaveCode
+						AND DTFrom = @lDTFrom
+						AND DTTo = @lDTTo
+
+					END
+
+					FETCH NEXT FROM lCur_LeaveBalance INTO
+						@lIDNumber, @lUserName, @lLeaveCode, @lDTFrom, @lDTTo
+
+				END
+
+				CLOSE lCur_LeaveBalance
+				DEALLOCATE lCur_LeaveBalance
+
+				IF ISNULL(@lErrorUsers, '') <> ''
+				BEGIN
+				SET @lErrorMessage = 'Leave quota cannot be deleted because it is already used.'
+					+ CHAR(10)
+					+ @lErrorUsers
+
+				RAISERROR(@lErrorMessage, 16, 1)
+
+				END
+
+				COMMIT TRANSACTION
+
+			END TRY
+
+			BEGIN CATCH
+
+				IF @@TRANCOUNT > 0
+					ROLLBACK TRANSACTION
+
+				IF CURSOR_STATUS('local', 'lCur_LeaveBalance') >= -1
+				BEGIN
+					CLOSE lCur_LeaveBalance
+					DEALLOCATE lCur_LeaveBalance
+				END
+
+				SELECT
+					@lErrorMessage = ERROR_MESSAGE(),
+					@lErrorLine = ERROR_LINE()
+
+				RAISERROR(
+					'Error deleting leave balance. Line: %d | Message: %s',
+					16,
+					1,
+					@lErrorLine,
+					@lErrorMessage
+				)
+
+			END CATCH
+
+		END
+
+
+
+
+
+	--IF @pOption = 99 -- SO SAVE FOR APPROVAL SOID in staging header has request for approval.   
+	--		BEGIN
+	--		CREATE TABLE #AAMProcessResultsSA_SO  ( AHID INT, AID BIGINT, ADID INT, AGHID BIGINT, AGDID BIGINT, PRIMARYID INT );
+			
+	--		DECLARE @ltableHTMLTotal NVARCHAR(MAX) = '';
+
+
+	--		BEGIN TRY
+	--			BEGIN TRANSACTION;
+
+	--			CREATE TABLE #tmpSONumberTable ( SONum NVARCHAR(55));
+
+				
+	--			INSERT INTO #tmpSONumberTable 
+	--			SELECT  SONum FROM @TypeSONum;  
+
+	--			-- Declare cursor
+	--			IF CURSOR_STATUS('local', 'SOkerser') >= -1
+	--			BEGIN
+	--				CLOSE SOkerser;
+	--				DEALLOCATE SOkerser;
+	--			END
+
+	--			-- Declare cursor
+	--			DECLARE SOkerser CURSOR LOCAL FAST_FORWARD FOR
+	--			SELECT DISTINCT SONum FROM #tmpSONumberTable;
+	--			OPEN SOkerser;
+	--			FETCH NEXT FROM SOkerser INTO @lSONum;
+	--			WHILE @@FETCH_STATUS = 0
+	--			BEGIN 
+	--			-- star loop in type table 
+
+	--			SET @lAddmsg = 'SOID : '+ @lSONum;
+	--			BEGIN TRY
+	--			BEGIN TRAN
+	--				EXEC spActivityLogs @pButtonName = @pActivity ,
+	--									@pErrorMessage=@lmsg, 
+	--									@pModuleID=@pModuleID, 
+	--									@pUser = @pUser,
+	--									@pTimeStamp=@lTimeStamp,
+	--									@pAdditionalMsg= @lAddmsg ,
+	--									@pTransactional = 1
+
+	--				SET @lAHID = @@IDENTITY
+
+	--				SELECT @lStatusID = RID  ,@lStatus = RValue
+	--				FROM tblReferenceMaster 
+	--				WHERE MID = @lMID  AND RCode = 'FA' AND RCategory = 'ADS APPROVAL'
+
+
+	--				SELECT TOP 1 @lPrevStatusID = CutOffReq --,@lAmount = SUM(SOAmount)
+	--				FROM tblADSSalesOrders 
+	--				WHERE SOID = @lSONum
+
+	--				--IF @lPrevStatusID IS NULL 
+	--				--BEGIN
+	--				--	SET @lPrevStatusID = @lStatusID;
+	--				--END
+	--					UPDATE tblADSSalesOrders SET CutOffReq = 1 WHERE SOID = @lSONum
+							
+							
+	--					SELECT @lID = ID  FROM tblADSSalesOrders WHERE SOID = @lSONum
+	--					SELECT @lCID = CID  FROM tblAAMCategory WHERE Code = 'ReqSOChangeCutOff'
+
+	--					IF @lSORequestExpidationDate = '' OR @lSORequestExpidationDate = NULL
+	--						BEGIN
+	--							SET @lSORequestExpidationDate = 1;
+	--						END
+						
+						
+	--					DELETE @lTypeAAMAD
+	--					INSERT INTO @lTypeAAMAD (ModuleName, CID    , ID  ,TableID   , SubCategory , SubCategoryValue , ALHID  , CurrentStat, PrevStat       , TableName          , CreatedBy , Reason   ,RequestColumn ,ExpirationDate)
+	--								  VALUES    ('ADS'     ,@lCID   , @lID, @lID     , ''          ,''                , @lAHID , @lStatusID , @lPrevStatusID , 'tblADSSalesOrders', @pUser    , @pRemarks,'CutOffReq'   ,GETDATE() + @lSORequestExpidationDate)
+
+							
+	--						 INSERT INTO #AAMProcessResultsSA_SO(AHID,AID,ADID,AGHID, AGDID,PRIMARYID)
+	--						 EXEC spAAMProcess @pOption = 9, @pTypeAD = @lTypeAAMAD
+						
+	--						--SELECT @lID
+	--						-- SELECT * FROM @lTypeAAMAD
+
+	--						 SELECT @lAGHID = AGHID FROM #AAMProcessResultsSA_SO
+
+	--						 IF @lAGHID IS NULL OR @lAGHID = ''
+	--							BEGIN
+	--							   RAISERROR ('No AAM defined.',11,1)
+	--						   END 
+	--						 ELSE
+	--							BEGIN
+	--							    IF @lAGHID IS NOT NULL
+	--									BEGIN
+	--										UPDATE tblADSSalesOrders 
+	--											SET AGHID = @lAGHID,
+	--												CutOffReq = 1
+	--										WHERE SOID = @lSONum
+										
+	--								END				
+
+	--							SELECT  @lSOID = B.SOID,@lCustomername = C.NAME1, @lAmount = SUM(B.SOAmount)
+	--								FROM tblADSSalesOrders B 
+	--								LEFT JOIN tblSAP_KNA1 C  ON C.KUNNR = B.SOLDTO
+	--								WHERE B.SOID = @lSONum AND B.AGHID = @lAGHID
+	--								GROUP BY   B.SOID, C.NAME1
+
+	--							SET @ltableHTML =
+	--							'<table cellpadding="4" cellspacing="0" width="100%"
+	--									style="border-collapse:collapse;font-family:Arial;font-size:12px;">'
+
+	--							+ '<tr style="background-color:#E6E6E6;">'
+	--							+ '<td colspan="10" style="border:1px solid #000;
+	--									font-weight:bold;
+	--									color:#02075D;">'
+	--							+ 'SO NUMBER: ' + ISNULL(@lSOID,'') + ' | SO Amount: ' + REPLACE(CONVERT(VARCHAR(20),CAST(@lAmount AS MONEY),1),'.00','')
+	--							+ '</td>'
+	--							+ '</tr>'
+
+	--							+ '<tr style="background-color:#E6E6E6;">'
+	--							+ '<td colspan="10" style="border:1px solid #000;
+	--									font-weight:bold;
+	--									color:#02075D;">'
+	--							+ 'CustomerName: ' + ISNULL(@lCustomername,'')
+	--							+ '</td>'
+	--							+ '</tr>';
+
+
+	--								SET @ltableHTML +=
+	--							'<tr style="background-color:#E6E6E6;font-weight:bold;color:#02075D;">'
+	--							+ '<th style="border:1px solid #000;">SO PosNum</th>'
+	--							+ '<th style="border:1px solid #000;">Sold To</th>'
+	--							+ '<th style="border:1px solid #000;">Ship To</th>'
+	--							+ '<th style="border:1px solid #000;">Payer</th>'
+	--							+ '<th style="border:1px solid #000;">ItemCode</th>'
+	--							+ '<th style="border:1px solid #000;">Item Description</th>'
+	--							+ '<th style="border:1px solid #000;text-align:center;">SO Amount</th>'
+	--							+ '<th style="border:1px solid #000;">RouteCode</th>'
+	--							+ '<th style="border:1px solid #000;">Current SO CutOff</th>'
+	--							+ '<th style="border:1px solid #000;">New SO CutOff</th>'
+	--							+ '</tr>';
+
+					
+
+	--							DECLARE curDetails CURSOR FOR
+	--							SELECT
+	--								SOPosNum,
+	--								SoldTo,
+	--								ShipTo,
+	--								Payer,
+	--								ItemCode,
+	--								ItemDescription,
+	--								SOAmount,
+	--								RouteCode,
+	--								CutOff
+	--							FROM tblADSSalesOrders 
+	--							WHERE SOID = @lSONum;
+
+	--							OPEN curDetails;
+
+	--							FETCH NEXT FROM curDetails INTO
+	--								@lSORD_SOPosNum,
+	--								@lSORD_SoldTo,
+	--								@lSORD_ShipTo,
+	--								@lSORD_Payer,
+	--								@lSORD_ItemCode,
+	--								@lSORD_ItemDescription,
+	--								@lSORD_SOAmount,
+	--								@lSORD_RouteCode,
+	--								@lSOCutoff;
+
+	--							WHILE @@FETCH_STATUS = 0
+	--							BEGIN
+
+
+					
+
+	--							SET @ltableHTML +=
+	--									'<tr>'
+	--										+ '<td style="border:1px solid #000;">' + ISNULL(@lSORD_SOPosNum,'') + '</td>'
+	--										+ '<td style="border:1px solid #000;">' + ISNULL(@lSORD_SoldTo,'') + '</td>'
+	--										+ '<td style="border:1px solid #000;">' + ISNULL(@lSORD_ShipTo,'') + '</td>'
+	--										+ '<td style="border:1px solid #000;">' + ISNULL(@lSORD_Payer,'') + '</td>'
+	--										+ '<td style="border:1px solid #000;">' + ISNULL(@lSORD_ItemCode,'') + '</td>'
+	--										+ '<td style="border:1px solid #000;">' + ISNULL(@lSORD_ItemDescription,'') + '</td>'
+	--										+ '<td style="border:1px solid #000;text-align:right;">' + ISNULL(REPLACE(CONVERT(VARCHAR(20),CAST(@lSORD_SOAmount AS MONEY),1),'.00',''),'') + '</td>'
+	--										+ '<td style="border:1px solid #000;">' + ISNULL(@lSORD_RouteCode,'') + '</td>'
+	--										+ '<td style="border:1px solid #000;text-align:center;">' + ISNULL(FORMAT(@lSOCutoff, 'MM/dd/yyyy'), '') + '</td>'
+	--										+ '<td style="border:1px solid #000;text-align:center;">' + ISNULL(FORMAT(@pCutoffDate , 'MM/dd/yyyy'), '') + '</td>'
+	--									+ '</tr>';
+
+
+
+	--								FETCH NEXT FROM curDetails INTO
+	--									@lSORD_SOPosNum,
+	--									@lSORD_SoldTo,
+	--									@lSORD_ShipTo,
+	--									@lSORD_Payer,
+	--									@lSORD_ItemCode,
+	--									@lSORD_ItemDescription,
+	--									@lSORD_SOAmount,
+	--									@lSORD_RouteCode,
+	--									@lSOCutoff;
+	--							END
+
+	--							CLOSE curDetails;
+	--							DEALLOCATE curDetails;
+
+	--							SET @ltableHTML += '</table>';
+	--							SET @ltableHTMLTotal += '<h3>SO Number: ' + @lSOID + '</h3>' + @ltableHTML;
+	--							SET @ltableHTMLTotal += '<hr style="border:1px dashed #999; margin:20px 0;" />';
+
+
+	--							END
+						
+	--			COMMIT TRAN
+	--			END TRY
+
+	--			BEGIN CATCH
+	--				IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION; -- Rollback if there's an error
+	--				SET @lmsg = ERROR_MESSAGE();
+	--				EXEC spActivityLogs @pButtonName = @pActivity ,@pErrorMessage=@lmsg, @pModuleID=@pModuleID, @pUser = @pUser,@pTimeStamp=@lTimeStamp,@pAdditionalMsg= @lAddmsg ,@pTransactional = 1
+	--				RAISERROR (@lmsg, 16, 1);
+	--			END CATCH
+
+	--			--------- end loop 
+				
+	--				FETCH NEXT FROM SOkerser INTO @lSONum;
+	--			END;
+
+	--			CLOSE SOkerser;
+	--			DEALLOCATE SOkerser;
+
+	--			-- Drop the temp table
+	--			DROP TABLE #tmpSONumberTable;
+
+	--			COMMIT TRANSACTION; 
+	--		END TRY
+	--		BEGIN CATCH
+	--			IF @@TRANCOUNT > 0 
+	--				ROLLBACK TRANSACTION; -- Rollback if there's an error
+
+	--			SET @msg = ERROR_MESSAGE();
+	--			RAISERROR (@msg, 16, 1);
+	--		END CATCH;
+
+	--		EXEC spAAMProcess @pOption = 40, 
+	--										@pEmailBody = @ltableHTMLTotal,  
+	--										@pAGHID = @lAGHID, 
+	--										@pUser = @pUser, 
+	--										@pStatus = @lStatus, 
+	--										@pTimeStamp = @lTimeStamp
+
+	--		END
+	--IF @pOption = 91 -- SO CANCEL FOR APPROVAL REQUEST 
+	--		BEGIN
+	--			SELECT @lAHID = AGHID FROM  tblADSSalesOrders WHERE SOID = @pSOID
+
+	--			EXEC spAAMProcess @pOption = 42,  @pAGHID = @lAHID, @pActivity = @pActivity, @pUser = @pUser,  @pModuleName = @pModuleID
+
+	--			UPDATE tblADSSalesOrders  SET  CutOffReq = 0,AGHID = NULL WHERE SOID = @pSOID 
+
+	--		END
 
 END
 GO

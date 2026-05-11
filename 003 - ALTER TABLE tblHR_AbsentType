@@ -1,0 +1,70 @@
+
+
+
+
+
+
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+BEGIN TRY
+
+    BEGIN TRAN
+
+    /*========================================================
+     ADD NEW COLUMNS
+    ========================================================*/
+    ALTER TABLE tblHR_PersonnelLeaveBalance
+    ADD 
+        DTCreated      DATETIME NULL,
+        CreatedBy      VARCHAR(55) NULL,
+        DTModified     DATETIME NULL,
+        LastUpdateBy   VARCHAR(55) NULL;
+
+    /*========================================================
+     ADD IDENTITY COLUMN
+     NOTE:
+     SQL Server does NOT allow altering an existing
+     column to IDENTITY, but adding a NEW IDENTITY
+     column is allowed even with existing data.
+    ========================================================*/
+    ALTER TABLE tblHR_PersonnelLeaveBalance
+    ADD LeaveBalanceID INT IDENTITY(1,1);
+
+    /*========================================================
+     OPTIONAL: MAKE PRIMARY KEY
+    ========================================================*/
+    -- ALTER TABLE tblHR_PersonnelLeaveBalance
+    -- ADD CONSTRAINT PK_tblHR_PersonnelLeaveBalance
+    -- PRIMARY KEY (LeaveBalanceID);
+
+    COMMIT TRAN
+
+    PRINT 'SUCCESS: tblHR_PersonnelLeaveBalance updated successfully.'
+
+END TRY
+BEGIN CATCH
+
+    IF @@TRANCOUNT > 0
+        ROLLBACK TRAN
+
+    PRINT 'ERROR: ' + ERROR_MESSAGE();
+
+END CATCH
+GO
+
+
+
+
+
+
+
+
+
+
+
+
+
