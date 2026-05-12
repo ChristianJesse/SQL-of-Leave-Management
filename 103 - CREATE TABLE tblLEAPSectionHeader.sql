@@ -4,9 +4,9 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- =========================================
--- Check/Create tblHRInOutRecords
+-- Check/Create tblLEAPSectionHeader
 -- =========================================
-DECLARE @TableName SYSNAME = 'tblHRInOutRecords';
+DECLARE @TableName SYSNAME = 'tblLEAPSectionHeader';
 DECLARE @name NVARCHAR(128), @create_date DATETIME, @modify_date DATETIME;
 
 SELECT @name = name, @create_date = create_date, @modify_date = modify_date
@@ -26,14 +26,33 @@ LEFT JOIN sys.extended_properties ep
 WHERE t.name = @TableName
 ORDER BY c.column_id;
 
+IF OBJECT_ID(@TableName, 'U') IS NOT NULL
+BEGIN
+    PRINT 'Table Name: ' + @name;
+    PRINT 'Date Created: ' + FORMAT(@create_date, 'MM/dd/yyyy HH:mm:ss');
+    PRINT 'Date Modified: ' + FORMAT(@modify_date, 'MM/dd/yyyy HH:mm:ss');
+    PRINT 'Table is already Existing: ' + @TableName;
+END
 
 IF OBJECT_ID(@TableName, 'U') IS NULL
 BEGIN
-    CREATE TABLE dbo.tblHRInOutRecords
-    (	[ServerID]		VARCHAR(15) NULL,
-        [IDNumber]      VARCHAR(10) NOT NULL,
-        [InOutStatus]   VARCHAR(18) NOT NULL,
-        [TimeInOut]     DATETIME NOT NULL
+    CREATE TABLE dbo.tblLEAPSectionHeader
+    (
+        [SectionHID]        INT IDENTITY(1,1) PRIMARY KEY,
+        [IDNumber]          VARCHAR(10) NOT NULL,
+        [SectionHead]       VARCHAR(55) NOT NULL,
+        [Position]          VARCHAR(55) NOT NULL,
+        [DepartmentID]      INT NOT NULL,
+        [FixedSeaction]     BIT NOT NULL DEFAULT 0,
+        [Active]            BIT NOT NULL DEFAULT 1,
+        [CreatedBy]         VARCHAR(50) NOT NULL DEFAULT ORIGINAL_LOGIN(),
+        [DTCreated]         DATETIME NOT NULL DEFAULT GETDATE(),
+        [UpdatedBy]         VARCHAR(50) NOT NULL DEFAULT ORIGINAL_LOGIN(),
+        [DTUpdated]         DATETIME NOT NULL DEFAULT GETDATE(),
+
+        CONSTRAINT FK_tblLEAPSectionHeader_tblLEAPDepartment
+        FOREIGN KEY (DepartmentID)
+        REFERENCES dbo.tblLEAPDepartment(DepartmentID)
     ) ON [PRIMARY];
 END
 
@@ -50,7 +69,7 @@ PRINT 'Date Modified: ' + FORMAT(@modify_date, 'MM/dd/yyyy HH:mm:ss');
 -- Table Description
 -- =========================================
 DECLARE @tableDescription NVARCHAR(4000) = 
-N'Stores employee clock-in and clock-out records for attendance tracking.';
+N'Stores section leadership records within departments including the section head and their position.';
 
 IF EXISTS (
     SELECT 1
@@ -82,12 +101,17 @@ END
 DECLARE @columns TABLE (ColumnName NVARCHAR(128), Description NVARCHAR(4000));
 
 INSERT INTO @columns VALUES
-('ServerID', N'Server ID of the Biometric Server.'),
-('IDNumber', N'Employee ID number associated with the in/out record.'),
-('InOutStatus', N'Status of the record: either IN or OUT.'),
-('TimeInOut', N'Timestamp of the employee clock-in or clock-out.');
---('CreatedBy', N'User who created the in/out record.'),
---('DTCreated', N'Date and time the record was created.');
+('SectionHID', N'Primary key identifier for the section header record.'),
+('IDNumber', N'Employee ID number of the section head.'),
+('SectionHead', N'Full name of the section head responsible for the section.'),
+('Position', N'Job position or title of the section head.'),
+('DepartmentID', N'Foreign key referencing the department where the section belongs (tblLEAPDepartment.DepartmentID).'),
+('FixedSeaction', N'Indicates whether the section structure is fixed or system-defined (1 = Fixed, 0 = Flexible).'),
+('Active', N'Indicates if the section record is active (1 = Active, 0 = Inactive).'),
+('CreatedBy', N'User who created the section record.'),
+('DTCreated', N'Date and time when the section record was created.'),
+('UpdatedBy', N'User who last updated the section record.'),
+('DTUpdated', N'Date and time when the section record was last updated.');
 
 DECLARE @ColumnName NVARCHAR(128), @Description NVARCHAR(4000);
 

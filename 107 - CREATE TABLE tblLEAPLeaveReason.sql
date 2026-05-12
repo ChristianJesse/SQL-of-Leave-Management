@@ -4,9 +4,9 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- =========================================
--- Check/Create tblHRSectionHeader
+-- Check/Create tblLEAPLeaveReason
 -- =========================================
-DECLARE @TableName SYSNAME = 'tblHRSectionHeader';
+DECLARE @TableName SYSNAME = 'tblLEAPLeaveReason';
 DECLARE @name NVARCHAR(128), @create_date DATETIME, @modify_date DATETIME;
 
 SELECT @name = name, @create_date = create_date, @modify_date = modify_date
@@ -26,34 +26,39 @@ LEFT JOIN sys.extended_properties ep
 WHERE t.name = @TableName
 ORDER BY c.column_id;
 
-IF OBJECT_ID(@TableName, 'U') IS NOT NULL
-BEGIN
-    PRINT 'Table Name: ' + @name;
-    PRINT 'Date Created: ' + FORMAT(@create_date, 'MM/dd/yyyy HH:mm:ss');
-    PRINT 'Date Modified: ' + FORMAT(@modify_date, 'MM/dd/yyyy HH:mm:ss');
-    PRINT 'Table is already Existing: ' + @TableName;
-END
-
 IF OBJECT_ID(@TableName, 'U') IS NULL
 BEGIN
-    CREATE TABLE dbo.tblHRSectionHeader
-    (
-        [SectionHID]        INT IDENTITY(1,1) PRIMARY KEY,
-        [IDNumber]          VARCHAR(10) NOT NULL,
-        [SectionHead]       VARCHAR(55) NOT NULL,
-        [Position]          VARCHAR(55) NOT NULL,
-        [DepartmentID]      INT NOT NULL,
-        [FixedSeaction]     BIT NOT NULL DEFAULT 0,
-        [Active]            BIT NOT NULL DEFAULT 1,
-        [CreatedBy]         VARCHAR(50) NOT NULL DEFAULT ORIGINAL_LOGIN(),
-        [DTCreated]         DATETIME NOT NULL DEFAULT GETDATE(),
-        [UpdatedBy]         VARCHAR(50) NOT NULL DEFAULT ORIGINAL_LOGIN(),
-        [DTUpdated]         DATETIME NOT NULL DEFAULT GETDATE(),
+    CREATE TABLE dbo.tblLEAPLeaveReason
+    (	
+        [ReasonID]            INT IDENTITY(1,1) PRIMARY KEY,
 
-        CONSTRAINT FK_tblHRSectionHeader_tblHRDepartment
-        FOREIGN KEY (DepartmentID)
-        REFERENCES dbo.tblHRDepartment(DepartmentID)
+        -- ? UNIQUE CONSTRAINT ADDED HERE
+        [ReasonCode]          VARCHAR(10) NOT NULL 
+                             CONSTRAINT UQ_tblLEAPLeaveReason_ReasonCode UNIQUE,
+
+        [ReasonDescription]   VARCHAR(MAX) NULL,
+        [NoticePeriod]        TINYINT NOT NULL,
+        [Remarks]             VARCHAR(MAX) NULL,
+        [isActive]            BIT NOT NULL,
+        [LeaveCode]           VARCHAR(10) NULL,
+        [DTCreated]           DATETIME NULL,
+        [CreatedBy]           VARCHAR(55) NULL,
+        [DTModified]          DATETIME NULL,
+        [LastUpdateBy]        VARCHAR(55) NULL
     ) ON [PRIMARY];
+END
+
+-- =========================================
+-- Optional FK (SAFE)
+-- =========================================
+IF NOT EXISTS (
+    SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_tblLEAPLeaveReason_LeaveCode'
+)
+BEGIN
+    ALTER TABLE dbo.tblLEAPLeaveReason
+    ADD CONSTRAINT FK_tblLEAPLeaveReason_LeaveCode
+    FOREIGN KEY (LeaveCode)
+    REFERENCES dbo.tblHR_AbsentType(LeaveCode);
 END
 
 SELECT @name = name, @create_date = create_date, @modify_date = modify_date
@@ -69,7 +74,7 @@ PRINT 'Date Modified: ' + FORMAT(@modify_date, 'MM/dd/yyyy HH:mm:ss');
 -- Table Description
 -- =========================================
 DECLARE @tableDescription NVARCHAR(4000) = 
-N'Stores section leadership records within departments including the section head and their position.';
+N'Stores leave reasons, notice period requirements, audit fields, and status for leave management.';
 
 IF EXISTS (
     SELECT 1
@@ -101,17 +106,17 @@ END
 DECLARE @columns TABLE (ColumnName NVARCHAR(128), Description NVARCHAR(4000));
 
 INSERT INTO @columns VALUES
-('SectionHID', N'Primary key identifier for the section header record.'),
-('IDNumber', N'Employee ID number of the section head.'),
-('SectionHead', N'Full name of the section head responsible for the section.'),
-('Position', N'Job position or title of the section head.'),
-('DepartmentID', N'Foreign key referencing the department where the section belongs (tblHRDepartment.DepartmentID).'),
-('FixedSeaction', N'Indicates whether the section structure is fixed or system-defined (1 = Fixed, 0 = Flexible).'),
-('Active', N'Indicates if the section record is active (1 = Active, 0 = Inactive).'),
-('CreatedBy', N'User who created the section record.'),
-('DTCreated', N'Date and time when the section record was created.'),
-('UpdatedBy', N'User who last updated the section record.'),
-('DTUpdated', N'Date and time when the section record was last updated.');
+('ReasonID', N'Primary key identifier for the leave reason.'),
+('ReasonCode', N'Unique code representing the leave reason.'),
+('ReasonDescription', N'Description of the leave reason.'),
+('NoticePeriod', N'Required notice period (in days) before filing leave.'),
+('Remarks', N'Additional remarks or notes for the leave reason.'),
+('isActive', N'Indicates if the leave reason is active (1 = Active, 0 = Inactive).'),
+('LeaveCode', N'Associated leave type code.'),
+('DTCreated', N'Date and time when the record was created.'),
+('CreatedBy', N'User who created the record.'),
+('DTModified', N'Date and time when the record was last modified.'),
+('LastUpdateBy', N'User who last updated the record.');
 
 DECLARE @ColumnName NVARCHAR(128), @Description NVARCHAR(4000);
 

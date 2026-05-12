@@ -27,7 +27,7 @@ CREATE OR ALTER PROCEDURE spHR_ZKT
 	@pOption					TINYINT
 	,@pUserName					VARCHAR(50) = NULL
 	,@pRCategory				VARCHAR(50) = NULL
-	,@pTypeHRInOurRecords				typeHRInOurRecords READONLY
+	,@pTypeHRInOurRecords				typeLEAPInOurRecords READONLY
 	,@pTypeHRPostApproveLeaved			typeHRPostApproveLeaved READONLY
 	,@pTypeHRMLQLeaveTypes				typeHRMLQLeaveTypes READONLY
 	,@ptypeHRMLQSelectedEmployee		typeHRMLQSelectedEmployee READONLY
@@ -130,7 +130,7 @@ BEGIN
 		END
 	IF @pOption = 3 -- SAVE IN OUT DATA
 		BEGIN
-			INSERT INTO tblHRInOutRecords (ServerID,IDNumber,InOutStatus,TimeInOut)
+			INSERT INTO tblLEAPInOutRecords (ServerID,IDNumber,InOutStatus,TimeInOut)
 			SELECT ServerID,IDNumber,InOutStatus,TimeInOut FROM @pTypeHRInOurRecords
 			
 		END
@@ -370,7 +370,7 @@ BEGIN
 	IF @pOption = 12 -- GET ALL LEAVE TYPE
 		BEGIN
 			SELECT  ReasonID,ReasonCode,ReasonDescription,NoticePeriod,Remarks,isActive,LeaveCode
-			FROM tblHRLeaveReason WHERE LeaveCode = @pLeaveCode
+			FROM tblLEAPLeaveReason WHERE LeaveCode = @pLeaveCode
 		END
 	IF @pOption = 13 -- GET ALL APPLIED LEAVE
 		BEGIN
@@ -452,7 +452,7 @@ BEGIN
 	IF @pOption = 15 -- GET ALL tblHRLeaveReason
 		BEGIN
 			SELECT ReasonID,ReasonCode,ReasonDescription,NoticePeriod,Remarks,isActive,LeaveCode,DTCreated,CreatedBy,DTModified,LastUpdateBy 
-			FROM tblHRLeaveReason
+			FROM tblLEAPLeaveReason
 
 		END
 	IF @pOption = 16 -- UPSERT FOR LEAVE REASON MAINTENANCE tblHRLeaveReason
@@ -493,7 +493,7 @@ BEGIN
 			-- =========================================
 			BEGIN CATCH
 
-				IF ERROR_MESSAGE() LIKE '%FK_tblHRLeaveReason%'
+				IF ERROR_MESSAGE() LIKE '%FK_tblLEAPLeaveReason%'
 					BEGIN
 						RAISERROR ( 'Invalid LeaveCode: referenced value does not exist in tblHR_AbsentType.',  16, 1 );
 					END
@@ -706,7 +706,7 @@ BEGIN
 			WHERE  VL.Posted = 0
 
 		END
-	IF @pOption = 26 -- Save new leave quota MLQ 
+	IF @pOption = 26 -- Bulk Insert new leave quota MLQ 
 		BEGIN
 			BEGIN TRY
 				BEGIN TRANSACTION

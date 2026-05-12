@@ -4,9 +4,9 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- =========================================
--- Check/Create tblHRLeaveReasonLogs
+-- Check/Create tblLEAPDivision
 -- =========================================
-DECLARE @TableName SYSNAME = 'tblHRLeaveReasonLogs';
+DECLARE @TableName SYSNAME = 'tblLEAPDivision';
 DECLARE @name NVARCHAR(128), @create_date DATETIME, @modify_date DATETIME;
 
 SELECT @name = name, @create_date = create_date, @modify_date = modify_date
@@ -26,63 +26,48 @@ LEFT JOIN sys.extended_properties ep
 WHERE t.name = @TableName
 ORDER BY c.column_id;
 
-IF OBJECT_ID(@TableName, 'U') IS NULL
+IF OBJECT_ID(@TableName, 'U') IS NOT NULL
 BEGIN
-    CREATE TABLE dbo.tblHRLeaveReasonLogs
-    (	
-        [ReasonID]            INT IDENTITY(1,1) PRIMARY KEY,
-        [Activity]            VARCHAR(55) NULL,
-        [LeaveCode]           VARCHAR(10) NULL,
-        [ReasonCode]          VARCHAR(10) NOT NULL,
-        [ReasonDescription]   VARCHAR(MAX) NULL,
-        [NoticePeriod]        TINYINT NOT NULL,
-        [Remarks]             VARCHAR(MAX) NULL,
-        [isActive]            BIT NOT NULL,
-
-        [DTCreated]           DATETIME NULL,
-        [CreatedBy]           VARCHAR(55) NULL,
-        [DTModified]          DATETIME NULL,
-        [LastUpdateBy]        VARCHAR(55) NULL
-    ) ON [PRIMARY];
+    PRINT 'Table Name: ' + @name;
+    PRINT 'Date Created: ' + FORMAT(@create_date, 'MM/dd/yyyy HH:mm:ss');
+    PRINT 'Date Modified: ' + FORMAT(@modify_date, 'MM/dd/yyyy HH:mm:ss');
+    PRINT 'Table is already Existing: ' + @TableName;
 END
 
-SELECT @name = name, @create_date = create_date, @modify_date = modify_date
-FROM sys.tables
-WHERE name = @TableName;
-
-PRINT 'Table Info:'
-PRINT 'Table Name: ' + @name;
-PRINT 'Date Created: ' + FORMAT(@create_date, 'MM/dd/yyyy HH:mm:ss');
-PRINT 'Date Modified: ' + FORMAT(@modify_date, 'MM/dd/yyyy HH:mm:ss');
+IF OBJECT_ID(@TableName, 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.tblLEAPDivision
+    (
+        [DivisionID] INT IDENTITY(1,1) PRIMARY KEY,
+        [IDNumber] VARCHAR(10) NOT NULL,
+        [DivisionHead] VARCHAR(55) NOT NULL,
+        [DivisionPosition] VARCHAR(55) NOT NULL,
+        [Active] BIT NOT NULL DEFAULT 1,
+        [CreatedBy] VARCHAR(50) NOT NULL DEFAULT ORIGINAL_LOGIN(),
+        [DTCreated] DATETIME NOT NULL DEFAULT GETDATE(),
+        [UpdatedBy] VARCHAR(50) NOT NULL DEFAULT ORIGINAL_LOGIN(),
+        [DTUpdated] DATETIME NOT NULL DEFAULT GETDATE()
+    ) ON [PRIMARY];
+END
 
 -- =========================================
 -- Table Description
 -- =========================================
 DECLARE @tableDescription NVARCHAR(4000) = 
-N'Stores audit logs for leave reasons including activity type, previous values, and audit tracking fields.';
+N'Stores company division information including division head and position.';
 
-IF EXISTS (
-    SELECT 1
-    FROM sys.extended_properties
-    WHERE name = N'MS_Description'
-      AND class = 1
-      AND major_id = OBJECT_ID(N'dbo.' + @TableName)
-      AND minor_id = 0
+IF NOT EXISTS (
+    SELECT 1 FROM sys.extended_properties
+    WHERE major_id = OBJECT_ID('dbo.' + @TableName)
+    AND minor_id = 0
+    AND name = 'MS_Description'
 )
 BEGIN
-    EXEC sp_updateextendedproperty
-        @name = N'MS_Description',
-        @value = @tableDescription,
-        @level0type = N'SCHEMA', @level0name = N'dbo',
-        @level1type = N'TABLE',  @level1name = @TableName;
-END
-ELSE
-BEGIN
-    EXEC sp_addextendedproperty
-        @name = N'MS_Description',
-        @value = @tableDescription,
-        @level0type = N'SCHEMA', @level0name = N'dbo',
-        @level1type = N'TABLE',  @level1name = @TableName;
+    EXEC sys.sp_addextendedproperty 
+    @name=N'MS_Description',
+    @value=@tableDescription,
+    @level0type=N'SCHEMA',@level0name=N'dbo',
+    @level1type=N'TABLE',@level1name=@TableName;
 END
 
 -- =========================================
@@ -91,18 +76,15 @@ END
 DECLARE @columns TABLE (ColumnName NVARCHAR(128), Description NVARCHAR(4000));
 
 INSERT INTO @columns VALUES
-('ReasonID', N'Primary key identifier for the log record.'),
-('Activity', N'Type of activity performed (INSERT, UPDATE, DELETE).'),
-('LeaveCode', N'Associated leave type code.'),
-('ReasonCode', N'Code representing the leave reason.'),
-('ReasonDescription', N'Description of the leave reason.'),
-('NoticePeriod', N'Notice period at the time of the activity.'),
-('Remarks', N'Remarks at the time of the activity.'),
-('isActive', N'Status at the time of the activity (1 = Active, 0 = Inactive).'),
-('DTCreated', N'Date and time when the record was created.'),
-('CreatedBy', N'User who created the record.'),
-('DTModified', N'Date and time when the record was last modified.'),
-('LastUpdateBy', N'User who last updated the record.');
+('DivisionID',N'Primary key identifier for the division.'),
+('IDNumber',N'Employee ID number of the division head.'),
+('DivisionHead',N'Full name of the division head.'),
+('DivisionPosition',N'Official job position of the division head.'),
+('Active',N'Indicates if the division record is active (1 = Active, 0 = Inactive).'),
+('CreatedBy',N'User who created the division record.'),
+('DTCreated',N'Date and time when the division record was created.'),
+('UpdatedBy',N'User who last updated the division record.'),
+('DTUpdated',N'Date and time when the division record was last updated.');
 
 DECLARE @ColumnName NVARCHAR(128), @Description NVARCHAR(4000);
 

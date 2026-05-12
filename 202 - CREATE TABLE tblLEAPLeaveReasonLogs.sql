@@ -4,9 +4,9 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- =========================================
--- Check/Create tblHRDepartment
+-- Check/Create tblLEAPLeaveReasonLogs
 -- =========================================
-DECLARE @TableName SYSNAME = 'tblHRDepartment';
+DECLARE @TableName SYSNAME = 'tblLEAPLeaveReasonLogs';
 DECLARE @name NVARCHAR(128), @create_date DATETIME, @modify_date DATETIME;
 
 SELECT @name = name, @create_date = create_date, @modify_date = modify_date
@@ -26,37 +26,26 @@ LEFT JOIN sys.extended_properties ep
 WHERE t.name = @TableName
 ORDER BY c.column_id;
 
-IF OBJECT_ID(@TableName, 'U') IS NOT NULL
+IF OBJECT_ID(@TableName, 'U') IS NULL
 BEGIN
-    PRINT 'Table Name: ' + @name;
-    PRINT 'Date Created: ' + FORMAT(@create_date, 'MM/dd/yyyy HH:mm:ss');
-    PRINT 'Date Modified: ' + FORMAT(@modify_date, 'MM/dd/yyyy HH:mm:ss');
-    PRINT 'Table is already Existing: ' + @TableName;
+    CREATE TABLE dbo.tblLEAPLeaveReasonLogs
+    (	
+        [ReasonID]            INT IDENTITY(1,1) PRIMARY KEY,
+        [Activity]            VARCHAR(55) NULL,
+        [LeaveCode]           VARCHAR(10) NULL,
+        [ReasonCode]          VARCHAR(10) NOT NULL,
+        [ReasonDescription]   VARCHAR(MAX) NULL,
+        [NoticePeriod]        TINYINT NOT NULL,
+        [Remarks]             VARCHAR(MAX) NULL,
+        [isActive]            BIT NOT NULL,
+
+        [DTCreated]           DATETIME NULL,
+        [CreatedBy]           VARCHAR(55) NULL,
+        [DTModified]          DATETIME NULL,
+        [LastUpdateBy]        VARCHAR(55) NULL
+    ) ON [PRIMARY];
 END
 
--- Create table if it does not exist
-IF OBJECT_ID(@TableName,'U') IS NULL
-BEGIN
-    CREATE TABLE dbo.tblHRDepartment
-    (
-        DepartmentID       INT IDENTITY(1,1) PRIMARY KEY,
-        IDNumber           VARCHAR(10) NOT NULL,
-        DepartmentHead     VARCHAR(55) NOT NULL,
-        DepartmentPosition VARCHAR(55) NOT NULL,
-        DivisionID         INT NOT NULL,
-        Active             BIT NOT NULL DEFAULT 1,
-        CreatedBy          VARCHAR(50) NOT NULL DEFAULT ORIGINAL_LOGIN(),
-        DTCreated          DATETIME NOT NULL DEFAULT GETDATE(),
-        UpdatedBy          VARCHAR(50) NOT NULL DEFAULT ORIGINAL_LOGIN(),
-        DTUpdated          DATETIME NOT NULL DEFAULT GETDATE(),
-
-        CONSTRAINT FK_tblHRDepartment_tblHRDivision
-        FOREIGN KEY (DivisionID)
-        REFERENCES dbo.tblHRDivision(DivisionID)
-    );
-END
-
--- Fetch table info
 SELECT @name = name, @create_date = create_date, @modify_date = modify_date
 FROM sys.tables
 WHERE name = @TableName;
@@ -67,15 +56,16 @@ PRINT 'Date Created: ' + FORMAT(@create_date, 'MM/dd/yyyy HH:mm:ss');
 PRINT 'Date Modified: ' + FORMAT(@modify_date, 'MM/dd/yyyy HH:mm:ss');
 
 -- =========================================
--- Table Description with Validation
+-- Table Description
 -- =========================================
 DECLARE @tableDescription NVARCHAR(4000) = 
-N'Stores department information under a specific division including the department head and their position.';
+N'Stores audit logs for leave reasons including activity type, previous values, and audit tracking fields.';
 
 IF EXISTS (
     SELECT 1
     FROM sys.extended_properties
     WHERE name = N'MS_Description'
+      AND class = 1
       AND major_id = OBJECT_ID(N'dbo.' + @TableName)
       AND minor_id = 0
 )
@@ -101,16 +91,18 @@ END
 DECLARE @columns TABLE (ColumnName NVARCHAR(128), Description NVARCHAR(4000));
 
 INSERT INTO @columns VALUES
-('DepartmentID','Primary key identifier of the department.'),
-('IDNumber','Employee ID of the department head.'),
-('DepartmentHead','Name of the department head.'),
-('DepartmentPosition','Position title of the department head.'),
-('DivisionID','Foreign key referencing tblHRDivision.'),
-('Active','Indicates if the department record is active.'),
-('CreatedBy','User who created the record.'),
-('DTCreated','Date and time when the record was created.'),
-('UpdatedBy','User who last updated the record.'),
-('DTUpdated','Date and time when the record was last updated.');
+('ReasonID', N'Primary key identifier for the log record.'),
+('Activity', N'Type of activity performed (INSERT, UPDATE, DELETE).'),
+('LeaveCode', N'Associated leave type code.'),
+('ReasonCode', N'Code representing the leave reason.'),
+('ReasonDescription', N'Description of the leave reason.'),
+('NoticePeriod', N'Notice period at the time of the activity.'),
+('Remarks', N'Remarks at the time of the activity.'),
+('isActive', N'Status at the time of the activity (1 = Active, 0 = Inactive).'),
+('DTCreated', N'Date and time when the record was created.'),
+('CreatedBy', N'User who created the record.'),
+('DTModified', N'Date and time when the record was last modified.'),
+('LastUpdateBy', N'User who last updated the record.');
 
 DECLARE @ColumnName NVARCHAR(128), @Description NVARCHAR(4000);
 
@@ -123,7 +115,7 @@ FETCH NEXT FROM ColumnCursor INTO @ColumnName, @Description;
 WHILE @@FETCH_STATUS = 0
 BEGIN
     IF EXISTS (
-        SELECT 1
+        SELECT 1 
         FROM sys.extended_properties
         WHERE name = N'MS_Description'
           AND class = 1
@@ -157,15 +149,14 @@ DEALLOCATE ColumnCursor;
 -- =========================================
 -- Verify Descriptions
 -- =========================================
-PRINT 'Column Descriptions:';
 SELECT
     c.name AS [Column Name],
     ep.value AS [Description]
 FROM sys.columns c
 INNER JOIN sys.tables t ON c.object_id = t.object_id
 LEFT JOIN sys.extended_properties ep 
-    ON ep.major_id = t.object_id
-    AND ep.minor_id = c.column_id
+    ON ep.major_id = t.object_id 
+    AND ep.minor_id = c.column_id 
     AND ep.name = 'MS_Description'
 WHERE t.name = @TableName
 ORDER BY c.column_id;
