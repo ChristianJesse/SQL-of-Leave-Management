@@ -39,20 +39,20 @@ BEGIN TRY
 	SELECT @lMID = MID FROM tblModule WHERE ModuleCode = 'HR';
     INSERT INTO #MenuTemp (ParentId, TempParentRowId, LinkText, LinkURL, Sort, ModuleName, Official, DeviceAlloc, MID)
     VALUES
-        (@pGrandParentID, 1, 'My Team'				, '../HumanResource/HRCalendar.aspx'	, 4, 'SCM', 1, 0, @lMID),
-        (@pGrandParentID, 1, 'HR Maintenance'		, ''									, 5, 'SCM', 1, 0, @lMID)
+        (@pGrandParentID, 1, 'LeAP'					, '../LeAP/LeAPMyTeam.aspx'		, 4, 'SCM', 1, 0, @lMID),
+        (@pGrandParentID, 1, 'Maintenance'			, ''										, 5, 'SCM', 1, 0, @lMID),
+        (@pGrandParentID, 1, 'Post Approved Leave'	, '../LeAP/LeAPPostApprovedLeaves.aspx'		, 6, 'SCM', 1, 0, @lMID)
 
 
     SELECT @pGrandParentIID = ItemId FROM tblMenu WHERE LinkText = 'HR Maintenance';
 
 	INSERT INTO #MenuTemp (ParentId, TempParentRowId, LinkText, LinkURL, Sort, ModuleName, Official, DeviceAlloc, MID)
     VALUES
-        (@pGrandParentIID, 2, 'Leave Maintenance'		, '../HumanResource/HRLeaveMaintenance.aspx'	, 1, 'SCM', 1, 0, @lMID),
-        (@pGrandParentIID, 2, 'Leave Reason Maintenance'		, '../HumanResource/HRDashReasonMaintenance.aspx'	, 2, 'SCM', 1, 0, @lMID),
-        (@pGrandParentIID, 2, 'Schedule Maintenance'	, '../HumanResource/HRScheduleMaintenance.aspx'	, 3, 'SCM', 1, 0, @lMID),
-        (@pGrandParentIID, 2, 'Holiday Tagging'			, '../HumanResource/HRHolidayTaggingMaintenance.aspx'	, 4, 'SCM', 1, 0, @lMID),
-        (@pGrandParentIID, 2, 'Maintain Leave Quota'	, '../HumanResource/HRMaintainLeaveQuota.aspx'	, 5, 'SCM', 1, 0, @lMID),
-        (@pGrandParentIID, 2, 'Post Approved Leave'		, '../HumanResource/HRDashPostApprovedLeaves.aspx'	, 6, 'SCM', 1, 0, @lMID)
+        (@pGrandParentIID, 2, 'Leaves'			, '../LeAP/LeAPLeaveMaintenance.aspx'	, 1, 'SCM', 1, 0, @lMID),
+        (@pGrandParentIID, 2, 'Leave Reasons'	, '../LeAP/LeAPReasonMaintenance.aspx'	, 2, 'SCM', 1, 0, @lMID),
+        (@pGrandParentIID, 2, 'Schedules'		, '../LeAP/LeAPScheduleMaintenance.aspx'	, 3, 'SCM', 1, 0, @lMID),
+        (@pGrandParentIID, 2, 'Holidays'		, '../LeAP/LeAPHolidayMaintenance.aspx'	, 4, 'SCM', 1, 0, @lMID),
+        (@pGrandParentIID, 2, 'Leave Quota'		, '../LeAP/LeAPLeaveQuotaMaintenance.aspx'	, 5, 'SCM', 1, 0, @lMID)
 		
 
     -- Step 3: Loop through each row
