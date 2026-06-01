@@ -1,9 +1,9 @@
-SET ANSI_NULLS ON
+﻿SET ANSI_NULLS ON
 	GO
 SET QUOTED_IDENTIFIER ON
 GO
 /********************************************************************************************************************************
-SP Name:     spHR_ZKT
+SP Name:     spLEAP
 Description: 
 Author:      COORETO
 Called from: HR CALENDAR
@@ -25,7 +25,7 @@ CREATE OR ALTER PROCEDURE spLEAP
 	@pOption					TINYINT
 	,@pUserName					VARCHAR(50) = NULL
 	,@pRCategory				VARCHAR(50) = NULL
-	,@pTypeHRInOurRecords				typeLEAPInOurRecords READONLY
+	,@pTypeLEAPInOutRecords				TypeLEAPInOutRecords READONLY
 	,@pTypeHRPostApproveLeaved			typeHRPostApproveLeaved READONLY
 	,@pTypeHRMLQLeaveTypes				typeHRMLQLeaveTypes READONLY
 	,@ptypeHRMLQSelectedEmployee		typeHRMLQSelectedEmployee READONLY
@@ -41,14 +41,15 @@ CREATE OR ALTER PROCEDURE spLEAP
 	,@pLeaveCode				VARCHAR(10) = NULL
 	,@pLeaveDesc				VARCHAR(max) = NULL
 	,@pAbsentType				VARCHAR(10) = NULL
-	,@pChargeToLeaved			TINYINT = NULL
+	,@pChargeToLeave			TINYINT = NULL
 	,@pEndDate					date = NULL
-	,@pFillingNotice			TINYINT = NULL
+	,@pFilingNotice			TINYINT = NULL
 	,@pWithQuota				TINYINT = NULL
-	,@pLeavedColor				VARCHAR(20) = NULL
-	,@pDayspecific				TINYINT = NULL
-	,@pChargeToLeavedType		VARCHAR(10) = NULL
+	,@pLeaveColor				VARCHAR(20) = NULL
+	,@pDateSpecific				TINYINT = NULL
+	,@pChargeToLeaveType		VARCHAR(10) = NULL
 	,@pActive					tinyint = NULL
+	,@pPeriodSpecific			TINYINT = NULL --Jake
 
 	,@pActivity					VARCHAR(50) = NULL
 	,@pModuleID					VARCHAR(50) = NULL
@@ -58,12 +59,18 @@ CREATE OR ALTER PROCEDURE spLEAP
 	,@pRemarks					VARCHAR(max) = NULL
 
 	,@pSchedCode				VARCHAR(10) = NULL
-	,@pSchedDesc				VARCHAR(60) = NULL
+	,@pSchedDesc				VARCHAR(max) = NULL
 	,@pFirstHalf				VARCHAR(11) = NULL
 	,@pSecondHalf				VARCHAR(11) = NULL
 	,@pWholeDay					VARCHAR(11) = NULL
 
 	,@pRestDay					VARCHAR(11) = NULL
+	,@pRDID						INT = NULL
+
+	,@pPID						INT = NULL
+	,@pPeriod					VARCHAR(3) = NULL
+	,@pMonthStart				INT = NULL
+	,@pMonthEnd					INT = NULL
 
 	,@pIsCheck					TINYINT = NULL
 	,@pDTHoliday				DATETIME = NULL
@@ -80,6 +87,11 @@ CREATE OR ALTER PROCEDURE spLEAP
 	,@pDTTo						datetime = NULL
 	,@pQuota					FLOAT	= NULL
 	,@pLeaveBalanceID			INT = NULL
+	,@pYearValid				INT = NULL
+	,@pLeaveBalance				INT = NULL
+	,@pPathCode					VARCHAR(60) = NULL
+
+
 AS
 BEGIN
 
@@ -107,7 +119,7 @@ BEGIN
 			,@ltableHTMLTotal NVARCHAR(MAX) = ''
 			,@lLeaveType VARCHAR(55)
 			,@lWorkHrs TINYINT
-			,@lReason VARCHAR(55)
+			,@lReason VARCHAR(max)
 			,@lDTNotice DATETIME
 			,@lDTLeave DATETIME
 			,@lLeaveHrsFrom VARCHAR(8)
@@ -141,7 +153,7 @@ BEGIN
 			,@lOBTo DATETIME
 			,@lPurpose varchar(255)
 			,@lDestination varchar(255)
-
+			,@lAttachment varchar(255)
 
 
 CREATE TABLE #tmpApprovers (
@@ -171,38 +183,213 @@ CREATE TABLE #tmpApprovers (
 
 	IF @pOption = 1 -- Get Summited Leaved Data for calendar data
 		BEGIN
+			SELECT @lRanking = EmployeeGroup, @lDepartmentCode = DepartmentCode, @lUnitCode = UnitCode, @lCostCenter = CostCenter  FROM tblHR_PersonnelMaster WHERE UserName = @pUserName
+
 			SELECT A.IDNumber,A.UserName,A.Position,A.DepartmentCode,A.UnitCode,A.CostCenter,B.LeaveCode,B.DTLeave,B.LeaveReason,B.LeaveCode +' - ' + A.UserName AS USELEAVED
 				FROM tblHR_PersonnelMaster A 
 				INNER JOIN tblHR_PersonnelLeaves B ON A.IDNumber = B.IDNumber
-				WHERE B.DTApplied >='2025' AND A.DepartmentCode ='ZFAD' AND CostCenter = '10130'
+				WHERE  A.DepartmentCode =@lDepartmentCode AND CostCenter = @lCostCenter
 				
 
 		END
 	IF @pOption = 2 -- GET TEAM DATA
 		BEGIN
-			SELECT @lRanking = EmployeeGroup, @lDepartmentCode = DepartmentCode, @lUnitCode = UnitCode, @lCostCenter = CostCenter  FROM tblHR_PersonnelMaster WHERE UserName = @pUserName
+			DECLARE @WeekStart DATE = DATEADD(DAY, 1 - DATEPART(WEEKDAY, GETDATE()), CAST(GETDATE() AS DATE));
+			DECLARE @WeekEnd   DATE = DATEADD(DAY, 7, @WeekStart);
 
-			SELECT EmployeeGroup AS Ranking,* FROM tblHR_PersonnelMaster 
-			WHERE DTSeparated IS NULL 
-				AND DepartmentCode = @lDepartmentCode
-				AND UnitCode = @lUnitCode 
-				AND CostCenter = @lCostCenter 
-				AND EmployeeGroup >= @lRanking
-				ORDER BY Ranking
+			SELECT 
+				@lRanking = EmployeeGroup,
+				@lDepartmentCode = DepartmentCode,
+				@lUnitCode = UnitCode,
+				@lCostCenter = CostCenter
+			FROM tblHR_PersonnelMaster 
+			WHERE UserName = @pUserName;
+
+			SELECT 
+				A.EmployeeGroup AS Ranking,
+				A.IDNumber,
+				A.UserName,
+				A.LastName,
+				A.FirstName,
+				A.Position,
+				A.SchedCode,
+
+				ISNULL(B.VLTotalThisWeek, 0) AS VLTotalThisWeek,
+				ISNULL(B.SLTotalThisWeek, 0) AS SLTotalThisWeek,
+				ISNULL(C.OBTotalThisWeek, 0) AS OBTotalThisWeek,
+
+				ISNULL(D.InTotalThisWeek, 0) AS InTotalThisWeek,
+				ISNULL(D.LateTotalThisWeek, 0) AS LateTotalThisWeek
+
+			FROM tblHR_PersonnelMaster A
+
+			/* LEAVES */
+			LEFT JOIN (
+				SELECT 
+					IDNumber,
+					SUM(CASE WHEN LeaveCode = 'VL' THEN NumHours ELSE 0 END) AS VLTotalThisWeek,
+					SUM(CASE WHEN LeaveCode = 'SL' THEN NumHours ELSE 0 END) AS SLTotalThisWeek
+				FROM tblHR_PersonnelLeaves
+				WHERE DTLeave >= @WeekStart
+				  AND DTLeave <  @WeekEnd
+				GROUP BY IDNumber
+			) B ON A.IDNumber = B.IDNumber
+
+			/* OFFICIAL BUSINESS */
+			LEFT JOIN (
+				SELECT 
+					IDNumber,
+					SUM(NumHours) AS OBTotalThisWeek
+				FROM tblLEAPOfficialBusiness
+				WHERE OBFrom >= @WeekStart
+				  AND OBTo <  @WeekEnd
+				GROUP BY IDNumber
+			) C ON A.IDNumber = C.IDNumber
+
+			/* IN / OUT + WORK HOURS */
+			LEFT JOIN (
+				SELECT
+					X.IDNumber,
+
+					CAST(SUM(X.WorkMinutes) / 60.0 AS DECIMAL(18,2)) AS InTotalThisWeek,
+
+					CAST(
+						SUM(CASE WHEN X.LateMinutes > 0 THEN X.LateMinutes ELSE 0 END) / 60.0
+					AS DECIMAL(18,2)) AS LateTotalThisWeek
+
+				FROM (
+					SELECT
+						D.IDNumber,
+						D.WorkDate,
+						D.FirstIn,
+						D.LastOut,
+
+						/* WORK MINUTES (SAFE + SCHEDULE BASED) */
+						CASE 
+							WHEN D.FirstIn IS NOT NULL AND ISNULL(D.LastOut, GETDATE()) IS NOT NULL
+							THEN 
+								DATEDIFF(
+									MINUTE,
+									CASE 
+										WHEN D.FirstIn < DATEADD(MINUTE,
+												DATEDIFF(MINUTE, 0, TRY_CAST(WS.FirstHalf AS TIME)),
+												CAST(D.WorkDate AS DATETIME))
+										THEN DATEADD(MINUTE,
+												DATEDIFF(MINUTE, 0, TRY_CAST(WS.FirstHalf AS TIME)),
+												CAST(D.WorkDate AS DATETIME))
+										ELSE D.FirstIn
+									END,
+									CASE 
+										WHEN ISNULL(D.LastOut, GETDATE()) > DATEADD(MINUTE,
+												DATEDIFF(MINUTE, 0, TRY_CAST(WS.SecondHalf AS TIME)),
+												CAST(D.WorkDate AS DATETIME))
+										THEN DATEADD(MINUTE,
+												DATEDIFF(MINUTE, 0, TRY_CAST(WS.SecondHalf AS TIME)),
+												CAST(D.WorkDate AS DATETIME))
+										ELSE ISNULL(D.LastOut, GETDATE())
+									END
+								)
+							ELSE 0
+						END AS WorkMinutes,
+
+						/* LATE MINUTES (SAFE CONVERSION) */
+						CASE 
+							WHEN D.FirstIn >
+								 DATEADD(
+									MINUTE,
+									DATEDIFF(MINUTE, 0, TRY_CAST(WS.FirstHalf AS TIME)),
+									CAST(D.WorkDate AS DATETIME)
+								 )
+							THEN DATEDIFF(
+									MINUTE,
+									DATEADD(
+										MINUTE,
+										DATEDIFF(MINUTE, 0, TRY_CAST(WS.FirstHalf AS TIME)),
+										CAST(D.WorkDate AS DATETIME)
+									),
+									D.FirstIn
+								 )
+							ELSE 0
+						END AS LateMinutes
+
+					FROM (
+						SELECT
+							R.IDNumber,
+							CAST(R.TimeInOut AS DATE) AS WorkDate,
+
+							MIN(CASE WHEN R.InOutStatus = 'IN' THEN R.TimeInOut END) AS FirstIn,
+							MAX(CASE WHEN R.InOutStatus = 'OUT' THEN R.TimeInOut END) AS LastOut
+
+						FROM tblLEAPInOutRecords R
+						WHERE R.TimeInOut >= @WeekStart
+						  AND R.TimeInOut <  @WeekEnd
+						GROUP BY
+							R.IDNumber,
+							CAST(R.TimeInOut AS DATE)
+					) D
+
+					INNER JOIN tblHR_PersonnelMaster PM
+						ON PM.IDNumber LIKE '%' + D.IDNumber + '%'
+
+					INNER JOIN tblHR_WorkSchedule WS
+						ON WS.SchedCode = PM.SchedCode
+
+					WHERE D.FirstIn IS NOT NULL
+
+				) X
+
+				GROUP BY X.IDNumber
+
+			) D ON A.IDNumber LIKE '%' + D.IDNumber + '%'
+
+			WHERE 
+				A.DTSeparated IS NULL 
+				AND A.DepartmentCode = @lDepartmentCode
+				AND A.UnitCode = @lUnitCode 
+				AND A.CostCenter = @lCostCenter 
+				AND A.EmployeeGroup >= @lRanking
+
+			ORDER BY Ranking;
 		END
 	IF @pOption = 3 -- SAVE IN OUT DATA
 		BEGIN
+
 			INSERT INTO tblLEAPInOutRecords (ServerID,IDNumber,InOutStatus,TimeInOut)
-			SELECT ServerID,IDNumber,InOutStatus,TimeInOut FROM @pTypeHRInOurRecords
+			SELECT ServerID,IDNumber,InOutStatus,TimeInOut FROM @pTypeLEAPInOutRecords
 			
 		END
 	IF @pOption = 4 -- GET ALL LEAVE TYPE
 		BEGIN			
-			SELECT  LeaveCode,LeaveDesc,AbsentType,ChargeToLeave,EndDate,FilingNotice,WithQuota,LeaveColor,Datespecific,ChargeToLeaveType,LastUpdateBy,DTModified
-				FROM tblHR_AbsentType 
-				WHERE EndDate IS NULL OR CAST(GETDATE() AS DATE) <= EndDate
-			--WHERE LeaveCode IN (SELECT  DISTINCT ChargeToLeavedType FROM tblHR_AbsentType )
-			--WHERE ChargeToLeaved = 1	
+			
+			SELECT A.LeaveCode, A.LeaveDesc, A.AbsentType, A.ChargeToLeave, A.EndDate, A.FilingNotice, A.WithQuota, A.LeaveColor, A.DateSpecific
+				   ,A.PeriodSpecific
+
+					,CASE 
+						WHEN A.PeriodSpecific = 1 THEN
+							(SELECT TOP 1 RIGHT('0' + CAST(P.MonthStart AS VARCHAR(2)), 2)
+								FROM tblHR_PeriodSchedule P
+								WHERE MONTH(GETDATE()) BETWEEN P.MonthStart AND P.MonthEnd
+							)
+						ELSE NULL
+					END AS PeriodFrom
+
+					,CASE 
+						WHEN A.PeriodSpecific = 1 THEN
+							(SELECT TOP 1 RIGHT('0' + CAST(P.MonthEnd AS VARCHAR(2)), 2)
+								FROM tblHR_PeriodSchedule P
+								WHERE MONTH(GETDATE()) BETWEEN P.MonthStart AND P.MonthEnd
+							)
+						ELSE NULL
+					END AS PeriodTo
+
+				   ,A.ChargeToLeaveType
+				   ,A.LastUpdateBy
+				   ,A.DTModified
+			FROM tblHR_AbsentType A
+			WHERE (A.EndDate IS NULL OR CAST(GETDATE() AS DATE) <= A.EndDate)
+
+
+			
 		END
 	IF @pOption = 5 -- GET ALL Department
 		BEGIN
@@ -210,9 +397,19 @@ CREATE TABLE #tmpApprovers (
 		END
 	IF @pOption = 6 -- GET ALL Section
 		BEGIN
-			SELECT DISTINCT DepartmentCode,UnitCode,UnitCode + ' - ' + UnitName AS Section 
-				FROM tblHR_DepartmentUnit
-			WHERE DepartmentCode = @pDepartmentCode
+			IF @pDepartmentCode = NULL OR @pDepartmentCode = ''
+				BEGIN 
+					SELECT DISTINCT DepartmentCode,UnitCode,UnitCode + ' - ' + UnitName AS Section 
+						FROM tblHR_DepartmentUnit
+					--WHERE DepartmentCode = @pDepartmentCode
+				END
+			ELSE 
+				BEGIN 
+					SELECT DISTINCT DepartmentCode,UnitCode,UnitCode + ' - ' + UnitName AS Section 
+					FROM tblHR_DepartmentUnit
+					WHERE DepartmentCode = @pDepartmentCode
+				END
+			
 		END
 	IF @pOption = 7 -- GET ALL EMPLOYEE WITH AND WITHOUT LEAVE QUOTA  
 		BEGIN
@@ -227,39 +424,9 @@ CREATE TABLE #tmpApprovers (
 					WHEN B.IDNumber IS NULL THEN 0
 					WHEN B.DTFrom <= C.DTFrom AND B.DTTo >= C.DTTo THEN 1
 					ELSE 0
-				END AS IsCovered,
+				END AS IsCovered
 
-				CASE 
-					WHEN B.IDNumber IS NULL 
-						THEN C.LeaveType
-					ELSE NULL
-				END AS MissingLeaveType,
 
-				CASE 
-					WHEN B.IDNumber IS NULL 
-						THEN CONVERT(VARCHAR, C.DTFrom, 23) + ' to ' + CONVERT(VARCHAR, C.DTTo, 23)
-
-					WHEN B.DTFrom > C.DTFrom 
-						THEN CONVERT(VARCHAR, C.DTFrom, 23) + ' to ' + CONVERT(VARCHAR, B.DTFrom, 23)
-
-					WHEN B.DTTo < C.DTTo 
-						THEN CONVERT(VARCHAR, B.DTTo, 23) + ' to ' + CONVERT(VARCHAR, C.DTTo, 23)
-
-					ELSE NULL
-				END AS MissingPeriods,
-
-				CASE 
-					WHEN B.IDNumber IS NOT NULL 
-						THEN CONVERT(VARCHAR, C.DTFrom, 23) + ' to ' + CONVERT(VARCHAR, C.DTTo, 23)
-
-					WHEN B.DTFrom < C.DTFrom 
-						THEN CONVERT(VARCHAR, C.DTFrom, 23) + ' to ' + CONVERT(VARCHAR, B.DTFrom, 23)
-
-					WHEN B.DTTo > C.DTTo 
-						THEN CONVERT(VARCHAR, B.DTTo, 23) + ' to ' + CONVERT(VARCHAR, C.DTTo, 23)
-
-					ELSE NULL
-				END AS CoverPeriods
 
 
 			INTO #tmpTblQuota
@@ -268,35 +435,34 @@ CREATE TABLE #tmpApprovers (
 			LEFT JOIN tblHR_PersonnelLeaveBalance B
 				ON A.IDNumber = B.IDNumber AND B.LeaveCode = C.LeaveType AND B.DTFrom <= @lEndOfYear AND B.DTTo   >= @lStartOfYear
 			WHERE A.DTSeparated IS NULL
-			  AND A.DepartmentCode = @pDepartmentCode
-			  AND A.UnitCode LIKE '%' + @pUnitCode + '%'
+			AND (A.DepartmentCode = @pDepartmentCode AND A.UnitCode LIKE '%' + @pUnitCode + '%')
+
+			-- Department filter
+			AND ( ISNULL(@pDepartmentCode, '') = '' OR A.DepartmentCode = @pDepartmentCode )
+			-- Unit filter
+			AND ( ISNULL(@pUnitCode, '') = '' OR A.UnitCode LIKE '%' + @pUnitCode + '%' )
+			-- BL LeaveType Birthdate validation
+			AND (C.LeaveType <> 'BL' OR MONTH(A.DTBirth) BETWEEN MONTH(@lStartOfYear) AND MONTH(@lEndOfYear) )
+
 
 		----------------------------------------------WITH QUOTA
-			SELECT UserName, IDNumber, EmployeeName, Position, DepartmentCode, UnitCode, CostCenter,
-				STRING_AGG(LeaveType, ', ') AS LeaveType,
-				STRING_AGG(ISNULL(CAST(Quota AS VARCHAR(10)), '0'), ', ') AS Quota,
-				STRING_AGG(CoverPeriods, ' | ') AS Periods, -- CoverPeriods
+			SELECT UserName, IDNumber, EmployeeName, Position, DepartmentCode, UnitCode, CostCenter,Quota
 
-				'WITH QUOTA' AS Status
 			FROM #tmpTblQuota
 			GROUP BY UserName, IDNumber, EmployeeName,
-				Position, DepartmentCode, UnitCode, CostCenter,IsCovered
+				Position, DepartmentCode, UnitCode, CostCenter,Quota,IsCovered
 			HAVING  SUM(IsCovered) = COUNT(*)   
 
 		----------------------------------------------WITHOUT QUOTA
 
-			SELECT UserName, IDNumber, EmployeeName, Position, DepartmentCode, UnitCode, CostCenter,
-				STRING_AGG(CASE WHEN IsCovered = 0 THEN LeaveType END, ', ') AS LeaveType,
-				STRING_AGG( CASE  WHEN MissingPeriods IS NOT NULL  THEN ISNULL(CAST(Quota AS VARCHAR(10)), '0') END,  ', ') AS Quota,
-				STRING_AGG(MissingPeriods, ' | ') AS Periods,  --MissingPeriods
-				'WITHOUT QUOTA' AS Status
-		
+			SELECT UserName, IDNumber, EmployeeName, Position, DepartmentCode, UnitCode, CostCenter,Quota
+
 			FROM #tmpTblQuota
 			GROUP BY UserName, IDNumber, EmployeeName,
-				Position, DepartmentCode, UnitCode, CostCenter
+				Position, DepartmentCode, UnitCode, CostCenter,Quota
 			HAVING SUM(IsCovered) < COUNT(*)
 
-			--select * from #tmpTblQuota
+			select * from #tmpTblQuota
 			DROP TABLE IF EXISTS #tmpTblQuota
 
 		END
@@ -411,11 +577,12 @@ CREATE TABLE #tmpApprovers (
 		
 /*  
 
-EXEC spHR_ZKT @pOption = 13 , @pUserName = 'cooreto' ,@pDTApplied ='2025'
+EXEC spLEAP @pOption = 2  ,@pUserName = 'cooreto' ,@pDTApplied ='2025'
 
-EXEC spHR_ZKT @pOption = 9 , @pUserName = 'cooreto',@pDTApplied ='2026'   
 
-EXEC spHR_ZKT @pOption = 10 , @pUserName = 'cooreto',@pDTApplied ='2026',@pLeaveCode ='VL'
+EXEC spLEAP @pOption = 9 , @pUserName = 'cooreto',@pDTApplied ='2025'   
+
+EXEC spLEAP @pOption = 10 , @pUserName = 'cooreto',@pDTApplied ='2026',@pLeaveCode ='VL'
 
 */
 	IF @pOption = 10 -- GET Leave Balance per LeaveCode 
@@ -505,14 +672,16 @@ EXEC spHR_ZKT @pOption = 10 , @pUserName = 'cooreto',@pDTApplied ='2026',@pLeave
 				-- =========================================
 				set @lStartOfYear  = '2025'-- DATEFROMPARTS(YEAR(GETDATE()), 1, 1);
 
-				IF @pActive = 0
-				AND ( EXISTS ( SELECT 1  FROM tblHR_PersonnelLeaves  WHERE LeaveCode = @pLeaveCode AND DTApplied >= @lStartOfYear
-						) OR EXISTS ( SELECT 1  FROM tblHR_PersonnelLeaveBalance  WHERE LeaveCode = @pLeaveCode AND DTFrom >= @lStartOfYear )
-					)
-				BEGIN
-					RAISERROR ( 'LeaveCode is already in use and cannot be deactivated because it has existing transactions.', 16, 1 );
-					RETURN;
-				END
+				-- Start Jake
+				--IF @pActive = 0 
+				--AND ( EXISTS ( SELECT 1  FROM tblHR_PersonnelLeaves  WHERE LeaveCode = @pLeaveCode AND DTApplied >= @lStartOfYear
+				--		) OR EXISTS ( SELECT 1  FROM tblHR_PersonnelLeaveBalance  WHERE LeaveCode = @pLeaveCode AND DTFrom >= @lStartOfYear )
+				--	)
+				--BEGIN
+				--	RAISERROR ( 'LeaveCode is already in use and cannot be deactivated because it has existing transactions.', 16, 1 );
+				--	RETURN;
+				--END
+				-- End Jake
 
 
 				-- =========================================
@@ -525,9 +694,9 @@ EXEC spHR_ZKT @pOption = 10 , @pUserName = 'cooreto',@pDTApplied ='2026',@pLeave
 				ON TARGET.LeaveCode = SOURCE.LeaveCode
 
 				WHEN MATCHED THEN
-					UPDATE SET  LeaveDesc = @pLeaveDesc,  AbsentType = @pAbsentType,  ChargeToLeave = @pChargeToLeaved, EndDate = @pEndDate, 
-						FilingNotice = @pFillingNotice, WithQuota = @pWithQuota, LeaveColor = @pLeavedColor, Datespecific = @pDayspecific, 
-						ChargeToLeaveType = @pChargeToLeavedType, PeriodSpecific = @pActive, LastUpdateBy = @pUserName, DTModified = GETDATE()
+					UPDATE SET  LeaveDesc = @pLeaveDesc,  AbsentType = @pAbsentType,  ChargeToLeave = @pChargeToLeave, EndDate = @pEndDate, 
+						FilingNotice = @pFilingNotice, WithQuota = @pWithQuota, LeaveColor = @pLeaveColor, Datespecific = @pDateSpecific, 
+						ChargeToLeaveType = @pChargeToLeaveType, PeriodSpecific = @pPeriodSpecific, LastUpdateBy = @pUserName, DTModified = GETDATE()
 
 				WHEN NOT MATCHED THEN
 					INSERT (
@@ -535,8 +704,8 @@ EXEC spHR_ZKT @pOption = 10 , @pUserName = 'cooreto',@pDTApplied ='2026',@pLeave
 						LeaveColor, Datespecific, ChargeToLeaveType, CreatedBy, DTCreted, PeriodSpecific
 					)
 					VALUES (
-						@pLeaveCode, @pLeaveDesc, @pAbsentType, @pChargeToLeaved, @pEndDate, @pFillingNotice, 
-						@pWithQuota, @pLeavedColor, @pDayspecific, @pChargeToLeavedType, @pUserName, GETDATE(), @pActive
+						@pLeaveCode, @pLeaveDesc, @pAbsentType, @pChargeToLeave, @pEndDate, @pFilingNotice, 
+						@pWithQuota, @pLeaveColor, @pDateSpecific, @pChargeToLeaveType, @pUserName, GETDATE(), @pPeriodSpecific
 					);
 
 			END TRY
@@ -619,8 +788,9 @@ EXEC spHR_ZKT @pOption = 10 , @pUserName = 'cooreto',@pDTApplied ='2026',@pLeave
 		END
 	IF @pOption = 18 -- GET ALL tblHR_WorkScheduleRD
 		BEGIN
-			SELECT SchedCode,RestDay,CreatedBy,DTCreated,isActive,DTModified,LastUpdateBy 
+			SELECT RDID,SchedCode,RestDay,CreatedBy,DTCreated,isActive,DTModified,LastUpdateBy --Jake ADD RDID
 			FROM tblHR_WorkScheduleRD 
+			WHERE SchedCode = @pSchedCode -- JAKE
 
 		END
 	IF @pOption = 19 -- UPSERT tblHR_WorkSchedule
@@ -666,8 +836,10 @@ EXEC spHR_ZKT @pOption = 10 , @pUserName = 'cooreto',@pDTApplied ='2026',@pLeave
 				END
 
 				MERGE tblHR_WorkScheduleRD AS TARGET
-				USING ( SELECT @pSchedCode AS SchedCode ) AS SOURCE
-				ON TARGET.SchedCode = SOURCE.SchedCode
+				USING ( SELECT @pRDID AS RDID, @pSchedCode AS SchedCode, @pRestDay AS RestDay) AS SOURCE -- JAKE
+				ON TARGET.RDID = SOURCE.RDID --Jake
+				--TARGET.SchedCode = SOURCE.SchedCode
+				--AND TARGET.RestDay = SOURCE.RestDay --JAKE
 
 				WHEN MATCHED THEN
 					UPDATE SET  RestDay = @pRestDay, isActive = @pActive, LastUpdateBy = @pUserName, DTModified = GETDATE()
@@ -729,7 +901,7 @@ EXEC spHR_ZKT @pOption = 10 , @pUserName = 'cooreto',@pDTApplied ='2026',@pLeave
 			ELSE IF @pEmpGroup = 'PALM' 
 				SET @pEmpGroup = 'ZS,ZT';              -- Monthly
 
-			-- MAIN QUERY
+			-- MAIN QUERY (Returns everything in a single consolidated result set)
 			SELECT  
 				hr.IDNumber,
 				hr.FirstName + ' ' + hr.LastName AS EmployeeName,
@@ -747,7 +919,7 @@ EXEC spHR_ZKT @pOption = 10 , @pUserName = 'cooreto',@pDTApplied ='2026',@pLeave
 				lv.LeaveReason,
 				lv.WithNotice,
 				lv.LeaveNotice,
-				lv.ChargedToLeave,
+				lv.ChargedToLeave, -- This column will determine Charge vs Not Charge
 
 				lv.Posted,
 				lv.IsCancelled,
@@ -770,8 +942,7 @@ EXEC spHR_ZKT @pOption = 10 , @pUserName = 'cooreto',@pDTApplied ='2026',@pLeave
 					WHEN 2 THEN lv.Approved2_DTime
 					WHEN 3 THEN lv.Approved3_DTime
 				END AS DTApproved
-
-			INTO #tempTblApprovedLeaves
+			--INTO #tempTblApprovedLeaves
 			FROM tblHR_PersonnelLeaves lv
 			INNER JOIN tblHR_PersonnelMaster hr 
 				ON lv.IDNumber = hr.IDNumber
@@ -791,21 +962,10 @@ EXEC spHR_ZKT @pOption = 10 , @pUserName = 'cooreto',@pDTApplied ='2026',@pLeave
 				AND lv.DTLeave <= @pDTLeave
 				AND hr.EmployeeSubGroup IN (
 					SELECT DATA FROM dbo.fnsplit(@pEmpGroup, ',')
-				);
+				)
+			ORDER BY lv.ChargedToLeave DESC, lv.DTApplied DESC; -- Keeps structure ordered natively
 
-			-- CHARGED TO LEAVE
-			SELECT TOP 5 * 
-			FROM #tempTblApprovedLeaves
-			WHERE ChargedToLeave = 1
-			ORDER BY DTApplied DESC;
-
-			-- NOT CHARGED TO LEAVE
-			SELECT *
-			FROM #tempTblApprovedLeaves
-			WHERE ChargedToLeave = 0
-			ORDER BY DTApplied DESC;
-
-			DROP TABLE #tempTblApprovedLeaves;
+			--DROP TABLE #tempTblApprovedLeaves;
 		END
 	IF @pOption = 24 -- GET ALL REFERENCE tblReferenceMaster
 		BEGIN
@@ -860,6 +1020,7 @@ EXEC spHR_ZKT @pOption = 10 , @pUserName = 'cooreto',@pDTApplied ='2026',@pLeave
 								   @lDTToStr)
 
 					END
+					    EXEC spLEAP @pOption = 37, @pIDNumber = @lIDNumber, @pLeaveCode = @lLeaveCode, @pDTFrom = @lDTFrom,@pDTTo = @lDTTo, @pUserName = @pUserName,@pLeaveBalance = @lQuota
 
 					INSERT INTO tblHR_PersonnelLeaveBalance (IDNumber  , LeaveCode  , DTFrom  , DTTo  , Quota             , LeaveBalance      , AppliedLeave, ForPosting, LeaveUsed , Locked, LockedBy, LockedOn,DTCreated,CreatedBy )
 													VALUES	(@lIDNumber, @lLeaveCode, @lDTFrom, @lDTTo, ISNULL(@lQuota, 0), ISNULL(@lQuota, 0), 0			, 0			, 0			, 0		, NULL	  , NULL	,GETDATE(),@pUserName )
@@ -972,6 +1133,9 @@ EXEC spHR_ZKT @pOption = 10 , @pUserName = 'cooreto',@pDTApplied ='2026',@pLeave
 						AND DTFrom = @lDTFrom
 						AND DTTo = @lDTTo
 
+						DELETE tblEarnedLeaveQuota WHERE IDNumber = @lIDNumber
+						AND LeaveCode = @lLeaveCode AND YearValid = YEAR(@lDTFrom)
+
 					END
 
 					FETCH NEXT FROM lCur_LeaveBalance INTO
@@ -1042,293 +1206,376 @@ EXEC spHR_ZKT @pOption = 10 , @pUserName = 'cooreto',@pDTApplied ='2026',@pLeave
 		END
 	IF @pOption = 31 -- GET FILEPATH
 		BEGIN
-			SELECT Value FROM tblConfiguration_ActivePath WHERE Category = 'LEAP' AND CODE ='LEAPUPLOAD'
+			SELECT Value FROM tblConfiguration_ActivePath WHERE Category = 'LEAP' AND CODE = @pPathCode
 			--SELECT * FROM tblConfiguration_ArchivePath WHERE Category = 'LEAP' AND CODE ='LEAPUPLOAD'
 
 		END
 	IF @pOption = 32 -- LEAVE SAVE FOR APPROVAL
 		BEGIN
+			IF EXISTS ( SELECT 1 FROM tblHR_AbsentType A WHERE A.PeriodSpecific = 1 AND A.LeaveCode IN (SELECT LeaveType FROM @pTypeLeaveForApproval) )
+				BEGIN
+					DECLARE @LeaveSummary TABLE
+					(
+						IDNumber VARCHAR(10),
+						LeaveCode VARCHAR(10),
+						YearValid INT,
+						LeaveTotalBalance DECIMAL(18,2),
+						CurrentAccumulatedBalance DECIMAL(18,2),
+						totalleaveused DECIMAL(18,2)
+					);
 
-			CREATE TABLE #AAMProcessResultsLeave
-			(AHID INT,AID BIGINT ,ADID INT,AGHID BIGINT,AGDID BIGINT,PRIMARYID INT);
+					INSERT INTO @LeaveSummary
+					SELECT 
+						Q.IDNumber,
+						Q.LeaveCode,
+						Q.YearValid,
+						Q.LeaveTotalBalance,
+
+						( ISNULL(Q.January,0) +
+							CASE WHEN MONTH(GETDATE()) >= 2 THEN ISNULL(Q.February,0) ELSE 0 END +
+							CASE WHEN MONTH(GETDATE()) >= 3 THEN ISNULL(Q.March,0) ELSE 0 END +
+							CASE WHEN MONTH(GETDATE()) >= 4 THEN ISNULL(Q.April,0) ELSE 0 END +
+							CASE WHEN MONTH(GETDATE()) >= 5 THEN ISNULL(Q.May,0) ELSE 0 END +
+							CASE WHEN MONTH(GETDATE()) >= 6 THEN ISNULL(Q.June,0) ELSE 0 END +
+							CASE WHEN MONTH(GETDATE()) >= 7 THEN ISNULL(Q.July,0) ELSE 0 END +
+							CASE WHEN MONTH(GETDATE()) >= 8 THEN ISNULL(Q.August,0) ELSE 0 END +
+							CASE WHEN MONTH(GETDATE()) >= 9 THEN ISNULL(Q.September,0) ELSE 0 END +
+							CASE WHEN MONTH(GETDATE()) >= 10 THEN ISNULL(Q.October,0) ELSE 0 END +
+							CASE WHEN MONTH(GETDATE()) >= 11 THEN ISNULL(Q.November,0) ELSE 0 END +
+							CASE WHEN MONTH(GETDATE()) >= 12 THEN ISNULL(Q.December,0) ELSE 0 END
+						),
+
+						ISNULL(L.totalleaveused,0)
+
+					FROM tblEarnedLeaveQuota Q
+					LEFT JOIN (
+						SELECT  
+							LeaveType,
+							SUM(CAST(WorkHrs AS DECIMAL(18,2))) AS totalleaveused
+						FROM @pTypeLeaveForApproval
+						GROUP BY LeaveType
+					) L ON L.LeaveType = Q.LeaveCode;
 
 
-			BEGIN TRY
-				BEGIN TRANSACTION;
+					-- VALIDATION
+					IF EXISTS (
+						SELECT 1
+						FROM @LeaveSummary
+						WHERE totalleaveused > CurrentAccumulatedBalance
+					)
+					BEGIN
+						DECLARE @used DECIMAL(18,2),
+								@avail DECIMAL(18,2),
+								@leavecode VARCHAR(10);
+
+						SELECT TOP 1
+							@used = totalleaveused,
+							@avail = CurrentAccumulatedBalance,
+							@leavecode = LeaveCode
+						FROM @LeaveSummary
+						WHERE totalleaveused > CurrentAccumulatedBalance;
+
+
+					SET @msg = 'Insufficient leave balance for LeaveCode ' + @leavecode +
+							   '. Used: ' + CAST(@used AS VARCHAR(20)) +
+							   ' |Earned Available: ' + CAST(@avail AS VARCHAR(20));
+
+					RAISERROR(@msg, 16, 1);
+						RETURN;
+					END;
+
+					-- SUCCESS OUTPUT
+					SELECT *
+					FROM @LeaveSummary;
+				END
+			ELSE
+				BEGIN
+
+
+	----------------------------------------- if goods ---------------------------
+				CREATE TABLE #AAMProcessResultsLeave
+				(AHID INT,AID BIGINT ,ADID INT,AGHID BIGINT,AGDID BIGINT,PRIMARYID INT);
+
+				BEGIN TRY
+					BEGIN TRANSACTION;
 				
-				IF CURSOR_STATUS('local', 'LeaveCursor') >= -1
-					BEGIN
-						CLOSE LeaveCursor;
-						DEALLOCATE LeaveCursor;
-					END
+					IF CURSOR_STATUS('local', 'LeaveCursor') >= -1
+						BEGIN
+							CLOSE LeaveCursor;
+							DEALLOCATE LeaveCursor;
+						END
 
-				DECLARE LeaveCursor CURSOR LOCAL FAST_FORWARD FOR
-					SELECT LeaveType,DTLeave,LeaveHrsFrom,LeaveHrsTo,WorkHrs,ReasonCode,DTNotice,FileNotice,ReasonDesc
-					FROM @pTypeLeaveForApproval;
-
-
-				OPEN LeaveCursor;
-
-				FETCH NEXT FROM LeaveCursor INTO
-					 @lLeaveType
-					,@lDTLeave
-					,@lLeaveHrsFrom
-					,@lLeaveHrsTo
-					,@lWorkHrs
-					,@lReasonCode
-					,@lDTNotice
-					,@lFileNotice
-					,@lReasonDesc;
-
-				WHILE @@FETCH_STATUS = 0
-					BEGIN
-
-						SET @lAddmsg =
-								'LeaveType : ' + ISNULL(@lLeaveType,'')
-							+ ' | Date Leave : ' + ISNULL(CONVERT(VARCHAR,@lDTLeave,101),'')
-
-						BEGIN TRY
-							BEGIN TRAN;
-
-							EXEC spActivityLogs
-								 @pButtonName    = @pActivity,
-								 @pErrorMessage  = @lmsg,
-								 @pModuleID      = @pModuleID,
-								 @pUser          = @pUserName,
-								 @pTimeStamp     = @lTimeStamp,
-								 @pAdditionalMsg = @lAddmsg,
-								 @pTransactional = 1;
-
-							SET @lAHID = @@IDENTITY;
+					DECLARE LeaveCursor CURSOR LOCAL FAST_FORWARD FOR
+						SELECT LeaveType,DTLeave,LeaveHrsFrom,LeaveHrsTo,WorkHrs,ReasonCode,DTNotice,FileNotice,ReasonDesc
+						FROM @pTypeLeaveForApproval;
 
 
-							SELECT @lStatusID = RID ,@lStatus = RValue
-							FROM tblReferenceMaster
-							WHERE MID = @lMID AND RCode = 'FOR APPROVAL' AND RCategory = 'HR'
+					OPEN LeaveCursor;
 
-							/*
-								SAVE STAGING HEADER
-							*/
-/*	
+					FETCH NEXT FROM LeaveCursor INTO
+						 @lLeaveType
+						,@lDTLeave
+						,@lLeaveHrsFrom
+						,@lLeaveHrsTo
+						,@lWorkHrs
+						,@lReasonCode
+						,@lDTNotice
+						,@lFileNotice
+						,@lReasonDesc;
 
+					WHILE @@FETCH_STATUS = 0
+						BEGIN
 
-SELECT * FROM tblHR_PersonnelLeaveBalance WHERE IDNumber ='00002536' AND LeaveCode = 'BL'  AND GETDATE() BETWEEN DTFrom AND DTTo
-select  top 10 * from tblHR_PersonnelLeaves  where IDNumber ='00002536' order by  TransID  desc
-select  top 100 * from tblHR_PersonnelLeaveBalance where IDNumber ='00002536'
+							SET @lAddmsg =
+									'LeaveType : ' + ISNULL(@lLeaveType,'')
+								+ ' | Date Leave : ' + ISNULL(CONVERT(VARCHAR,@lDTLeave,101),'')
 
-sp_help tblHR_PersonnelLeaves
-*/
+							BEGIN TRY
+								BEGIN TRAN;
 
-		SELECT @lLeaveBalance=LeaveBalance  FROM tblHR_PersonnelLeaveBalance WHERE IDNumber = @pIDNumber AND LeaveCode = @lLeaveType AND @lTimeStamp BETWEEN DTFrom AND DTTo
-		SELECT @lChargeToLeave = ChargeToLeave,@lAbsentType = AbsentType  FROM tblHR_AbsentType WHERE LeaveCode = @lLeaveType 
-		SELECT @lReasonDefinition = ReasonDescription FROM tblLEAPLeaveReason WHERE ReasonCode = @lReasonCode
+								EXEC spActivityLogs
+									 @pButtonName    = @pActivity,
+									 @pErrorMessage  = @lmsg,
+									 @pModuleID      = @pModuleID,
+									 @pUser          = @pUserName,
+									 @pTimeStamp     = @lTimeStamp,
+									 @pAdditionalMsg = @lAddmsg,
+									 @pTransactional = 1;
 
-		INSERT INTO tblHR_PersonnelLeaves
-		(IDNumber	,LeaveCode	,DTApplied	,BalanceBefore,BalanceAfter ,LeaveHourFrom ,LeaveHourTo ,DTLeave	,NumHours	
-		,ReasonCode	 ,WithNotice,DTNotice	,NoticeFileName	,LeaveReason ,ChargedToLeave,AbsentType)
-		VALUES
-		(@pIDNumber	,@lLeaveType,@lTimeStamp,@lLeaveBalance,(@lLeaveBalance - @lWorkHrs),@lLeaveHrsFrom,@lLeaveHrsTo,@lDTLeave	,@lWorkHrs	
-		,@lReasonCode,'1'		,@lDTNotice	,@lFileNotice	,@lReasonDesc,@lChargeToLeave,@lAbsentType);
-
-							SET @lID = SCOPE_IDENTITY();
-
-							/*
-								GET AAM CATEGORY
-							*/
-
-							SELECT @lCID = CID
-							FROM tblAAMCategory
-							WHERE Code = 'Leave'
-
-							DELETE @lTypeAAMAD
-
-		INSERT INTO @lTypeAAMAD
-		( ModuleName ,CID	,ID		,TableID ,SubCategory,SubCategoryValue	,ALHID ,CurrentStat ,PrevStat ,TableName				,CreatedBy ,Reason		,RequestColumn ,ExpirationDate )
-		VALUES
-		( 'HR'		 ,@lCID	,@lID	,@lID	 ,''		 ,''				,@lAHID,@lStatusID  ,0		  ,'tblHR_PersonnelLeaves'	,@pUserName ,@lReasonDesc ,'StatusID'	  ,NULL );
-
-		INSERT INTO @lTypeAAMAttchmnts (TableID	,Category	,Code	,PrimaryFile, FileName		, FilePath)
-								SELECT  @lID	,Category	,Code	,1			,@lFileNotice	,'' 
-									FROM tblConfiguration_ActivePath 
-								WHERE Category = 'LEAP' AND Code ='LEAPUPLOAD'
-							/*
-								PROCESS AAM
-							*/
-
-							INSERT INTO #AAMProcessResultsLeave ( AHID ,AID ,ADID ,AGHID ,AGDID ,PRIMARYID )
-							EXEC spAAMProcess
-								 @pOption = 9,
-								 @pTypeAD = @lTypeAAMAD,
-								 @pTypeAttachments = @lTypeAAMAttchmnts
-
-							SELECT @lAGHID = AGHID
-							FROM #AAMProcessResultsLeave;
-
-							IF @lAGHID IS NULL
-								BEGIN
-									RAISERROR ('No AAM defined.',11,1);
-								END
-							ELSE
-								BEGIN
-
-									UPDATE tblHR_PersonnelLeaves
-									SET AGHID = @lAGHID
-									WHERE TransID = @lID
-
-									/*
-										UPDATE BALANCE (FOR ACCUMULATE APPLIED LEAVE)
-									*/
-
-									UPDATE tblHR_PersonnelLeaveBalance 
-									SET AppliedLeave = ISNULL(AppliedLeave,0) + ISNULL(@lWorkHrs,0),
-										LeaveBalance = LeaveBalance - ISNULL(@lWorkHrs,0)
-									WHERE IDNumber = @pIDNumber 
-									AND LeaveCode = @lLeaveType 
-									AND @lTimeStamp BETWEEN DTFrom AND DTTo
-
-									/*
-										EMAIL BODY
-									*/
-
-									SELECT 
-									@lLeaveType =  LeaveCode
-									,@lDTLeave = DTLeave
-									,@lWorkHrs = NumHours
-									,@lReasonCode = ReasonCode
-									,@lDTNotice = DTNotice
-									,@lFileNotice = NoticeFileName
-									,@lReasonDesc = LeaveReason
-									FROM tblHR_PersonnelLeaves 
-									WHERE AGHID = @lAGHID
-
-									SET @ltableHTML =
-										'<table cellpadding="4" cellspacing="0" width="100%"
-														style="border-collapse:collapse;font-family:Arial;font-size:12px;">'
-
-													+ '<tr style="background-color:#E6E6E6;">'
-													+ '<td colspan="2"
-														style="border:1px solid #000;
-														font-weight:bold;
-														color:#02075D;">'
-													+ 'Leave Application Details'
-													+ '</td>'
-													+ '</tr>'
-
-													+ '<tr>'
-													+ '<td style="border:1px solid #000;"><b>Leave Type</b></td>'
-													+ '<td style="border:1px solid #000;">' + ISNULL(@lLeaveType,'') + '</td>'
-													+ '</tr>'
-
-													+ '<tr>'
-													+ '<td style="border:1px solid #000;"><b>Date Leave</b></td>'
-													+ '<td style="border:1px solid #000;">' + ISNULL(FORMAT(@lDTLeave,'MM/dd/yyyy'),'') + '</td>'
-													+ '</tr>'
-
-													+ '<tr>'
-													+ '<td style="border:1px solid #000;"><b>Work Hours</b></td>'
-													+ '<td style="border:1px solid #000;">' + CAST(@lWorkHrs AS VARCHAR) + '</td>'
-													+ '</tr>'
-
-													+ '<tr>'
-													+ '<td style="border:1px solid #000;"><b>Reason</b></td>'
-													+ '<td style="border:1px solid #000;">' + ISNULL(@lReasonCode+' - '+@lReasonDefinition,'') + '</td>'
-													+ '</tr>'
-
-													+ '<tr>'
-													+ '<td style="border:1px solid #000;"><b>Notice Date</b></td>'
-													+ '<td style="border:1px solid #000;">' + ISNULL(FORMAT(@lDTNotice,'MM/dd/yyyy hh:mm:ss tt'),'') + '</td>'
-													+ '</tr>'
-
-													+ '<tr>'
-													+ '<td style="border:1px solid #000;"><b>Attachment</b></td>'
-													+ '<td style="border:1px solid #000;">' + ISNULL(@lFileNotice,'') + '</td>'
-													+ '</tr>'
-
-													+ '<tr>'
-													+ '<td style="border:1px solid #000;"><b>Reason Description</b></td>'
-													+ '<td style="border:1px solid #000;">' + ISNULL(@lReasonDesc,'') + '</td>'
-													+ '</tr>'
-
-													+ '</table>';
-
-									SET @ltableHTMLTotal += @ltableHTML;
-									SET @ltableHTMLTotal += '<hr style="border:1px dashed #999; margin:20px 0;" />';
-
-								END
-							COMMIT TRAN;
-						END TRY
-
-						BEGIN CATCH
-
-							IF @@TRANCOUNT > 0
-								ROLLBACK TRANSACTION;
-
-							SET @lmsg = ERROR_MESSAGE();
-
-							EXEC spActivityLogs
-								 @pButtonName    = @pActivity,
-								 @pErrorMessage  = @lmsg,
-								 @pModuleID      = @pModuleID,
-								 @pUser          = @pUserName,
-								 @pTimeStamp     = @lTimeStamp,
-								 @pAdditionalMsg = @lAddmsg,
-								 @pTransactional = 1;
-
-							RAISERROR (@lmsg,16,1);
-
-						END CATCH;
-
-						FETCH NEXT FROM LeaveCursor INTO
-							 @lLeaveType
-							,@lDTLeave
-							,@lLeaveHrsFrom
-							,@lLeaveHrsTo
-							,@lWorkHrs
-							,@lReasonCode
-							,@lDTNotice
-							,@lFileNotice
-							,@lReasonDesc;
-
-					END
-
-				CLOSE LeaveCursor
-				DEALLOCATE LeaveCursor
-
-			/*
-				SEND EMAIL
-			*/
-
-			EXEC spAAMProcess
-				 @pOption     = 40,
-				 @pEmailBody  = @ltableHTMLTotal,
-				 @pAGHID      = @lAGHID,
-				 @pUser       = @pUserName,
-				 @pStatus     = @lStatus,
-				 @pTimeStamp  = @lTimeStamp;
-
-				COMMIT TRANSACTION;
-			END TRY
-			BEGIN CATCH
-
-				IF @@TRANCOUNT > 0
-					ROLLBACK TRANSACTION;
-
-				SET @msg = ERROR_MESSAGE();
-				EXEC spActivityLogs
-								 @pButtonName    = @pActivity,
-								 @pErrorMessage  = @msg,
-								 @pModuleID      = @pModuleID,
-								 @pUser          = @pUserName,
-								 @pTimeStamp     = @lTimeStamp,
-								 @pAdditionalMsg = @lAddmsg,
-								 @pTransactional = 1;
-
-				RAISERROR (@msg,16,1);
+								SET @lAHID = @@IDENTITY;
 
 
-			END CATCH
+								SELECT @lStatusID = RID ,@lStatus = RValue
+								FROM tblReferenceMaster
+								WHERE MID = @lMID AND RCode = 'FOR APPROVAL' AND RCategory = 'HR'
 
-			
+								/*
+									SAVE STAGING HEADER
+								*/
+	/*	
+
+
+	SELECT * FROM tblHR_PersonnelLeaveBalance WHERE IDNumber ='00002536' AND LeaveCode = 'BL'  AND GETDATE() BETWEEN DTFrom AND DTTo
+	select  top 10 * from tblHR_PersonnelLeaves  where IDNumber ='00002536' order by  TransID  desc
+	select  top 100 * from tblHR_PersonnelLeaveBalance where IDNumber ='00002536'
+
+	sp_help tblHR_PersonnelLeaves
+	*/
+
+			SELECT @lLeaveBalance=LeaveBalance  FROM tblHR_PersonnelLeaveBalance WHERE IDNumber = @pIDNumber AND LeaveCode = @lLeaveType AND @lTimeStamp BETWEEN DTFrom AND DTTo
+			SELECT @lChargeToLeave = ChargeToLeave,@lAbsentType = AbsentType  FROM tblHR_AbsentType WHERE LeaveCode = @lLeaveType 
+			SELECT @lReasonDefinition = ReasonDescription FROM tblLEAPLeaveReason WHERE ReasonCode = @lReasonCode
+
+			INSERT INTO tblHR_PersonnelLeaves
+			(IDNumber	,LeaveCode	,DTApplied	,BalanceBefore,BalanceAfter ,LeaveHourFrom ,LeaveHourTo ,DTLeave	,NumHours	
+			,ReasonCode	 ,WithNotice,DTNotice	,NoticeFileName	,LeaveReason ,ChargedToLeave,AbsentType)
+			VALUES
+			(@pIDNumber	,@lLeaveType,@lTimeStamp,@lLeaveBalance,(@lLeaveBalance - @lWorkHrs),@lLeaveHrsFrom,@lLeaveHrsTo,@lDTLeave	,@lWorkHrs	
+			,@lReasonCode,'1'		,@lDTNotice	,@lFileNotice	,@lReasonDesc,@lChargeToLeave,@lAbsentType);
+
+								SET @lID = SCOPE_IDENTITY();
+
+								/*
+									GET AAM CATEGORY
+								*/
+
+								SELECT @lCID = CID
+								FROM tblAAMCategory
+								WHERE Code = 'LEAVE'
+
+
+				SELECT @pUnitCode = UnitCode FROM tblHR_PersonnelMaster where UserName = @pUserName
+
+								DELETE @lTypeAAMAD
+
+			INSERT INTO @lTypeAAMAD
+			( ModuleName ,CID	,ID		,TableID ,SubCategory ,SubCategoryValue	,ALHID ,CurrentStat ,PrevStat ,TableName				,CreatedBy ,Reason		,RequestColumn ,ExpirationDate )
+			VALUES
+			( 'LeAP'	 ,@lCID	,@lID	,@lID	 ,'Department',@pUnitCode				,@lAHID,@lStatusID  ,0		  ,'tblHR_PersonnelLeaves'	,@pUserName ,@lReasonDesc ,'StatusID'	  ,NULL );
+
+			-- For Attachments insert
+			INSERT INTO @lTypeAAMAttchmnts (TableID	,Category	,Code	,PrimaryFile, FileName		, FilePath)
+									SELECT  @lID	,Category	,Code	,1			,@lFileNotice	,'Leave Application files/'+ @lLeaveType+'/'
+								FROM tblConfiguration_ActivePath 
+									WHERE Category = 'LEAP' AND Code ='LeaveApp'
+								/*
+									PROCESS AAM
+								*/
+
+								INSERT INTO #AAMProcessResultsLeave ( AHID ,AID ,ADID ,AGHID ,AGDID ,PRIMARYID )
+								EXEC spAAMProcess
+									 @pOption = 9,
+									 @pTypeAD = @lTypeAAMAD,
+									 @pTypeAttachments = @lTypeAAMAttchmnts
+
+								SELECT @lAGHID = AGHID
+								FROM #AAMProcessResultsLeave;
+
+								IF @lAGHID IS NULL
+									BEGIN
+										RAISERROR ('No AAM defined.',11,1);
+									END
+								ELSE
+									BEGIN
+
+										UPDATE tblHR_PersonnelLeaves
+										SET AGHID = @lAGHID
+										WHERE TransID = @lID
+
+										/*
+											UPDATE BALANCE (FOR ACCUMULATE APPLIED LEAVE)
+										*/
+
+										UPDATE tblHR_PersonnelLeaveBalance 
+										SET AppliedLeave = ISNULL(AppliedLeave,0) + ISNULL(@lWorkHrs,0),
+											LeaveBalance = LeaveBalance - ISNULL(@lWorkHrs,0)
+										WHERE IDNumber = @pIDNumber 
+										AND LeaveCode = @lLeaveType 
+										AND @lTimeStamp BETWEEN DTFrom AND DTTo
+
+										/*
+											EMAIL BODY
+										*/
+
+										SELECT 
+										@lLeaveType =  LeaveCode
+										,@lDTLeave = DTLeave
+										,@lWorkHrs = NumHours
+										,@lReasonCode = ReasonCode
+										,@lDTNotice = DTNotice
+										,@lFileNotice = NoticeFileName
+										,@lReasonDesc = LeaveReason
+										FROM tblHR_PersonnelLeaves 
+										WHERE AGHID = @lAGHID
+
+										SET @ltableHTML =
+											'<table cellpadding="4" cellspacing="0" width="100%"
+															style="border-collapse:collapse;font-family:Arial;font-size:12px;">'
+
+														+ '<tr style="background-color:#E6E6E6;">'
+														+ '<td colspan="2"
+															style="border:1px solid #000;
+															font-weight:bold;
+															color:#02075D;">'
+														+ 'Leave Application Details'
+														+ '</td>'
+														+ '</tr>'
+
+														+ '<tr>'
+														+ '<td style="border:1px solid #000;"><b>Leave Type</b></td>'
+														+ '<td style="border:1px solid #000;">' + ISNULL(@lLeaveType,'') + '</td>'
+														+ '</tr>'
+
+														+ '<tr>'
+														+ '<td style="border:1px solid #000;"><b>Date Leave</b></td>'
+														+ '<td style="border:1px solid #000;">' + ISNULL(FORMAT(@lDTLeave,'MM/dd/yyyy'),'') + '</td>'
+														+ '</tr>'
+
+														+ '<tr>'
+														+ '<td style="border:1px solid #000;"><b>Work Hours</b></td>'
+														+ '<td style="border:1px solid #000;">' + CAST(@lWorkHrs AS VARCHAR) + '</td>'
+														+ '</tr>'
+
+														+ '<tr>'
+														+ '<td style="border:1px solid #000;"><b>Reason</b></td>'
+														+ '<td style="border:1px solid #000;">' + ISNULL(@lReasonCode+' - '+@lReasonDefinition,'') + '</td>'
+														+ '</tr>'
+
+														+ '<tr>'
+														+ '<td style="border:1px solid #000;"><b>Notice Date</b></td>'
+														+ '<td style="border:1px solid #000;">' + ISNULL(FORMAT(@lDTNotice,'MM/dd/yyyy hh:mm:ss tt'),'') + '</td>'
+														+ '</tr>'
+
+														+ '<tr>'
+														+ '<td style="border:1px solid #000;"><b>Attachment</b></td>'
+														+ '<td style="border:1px solid #000;">' + ISNULL(@lFileNotice,'') + '</td>'
+														+ '</tr>'
+
+														+ '<tr>'
+														+ '<td style="border:1px solid #000;"><b>Reason Description</b></td>'
+														+ '<td style="border:1px solid #000;">' + ISNULL(@lReasonDesc,'') + '</td>'
+														+ '</tr>'
+
+														+ '</table>';
+
+										SET @ltableHTMLTotal += @ltableHTML;
+										SET @ltableHTMLTotal += '<hr style="border:1px dashed #999; margin:20px 0;" />';
+
+									END
+								COMMIT TRAN;
+							END TRY
+
+							BEGIN CATCH
+
+								IF @@TRANCOUNT > 0
+									ROLLBACK TRANSACTION;
+
+								SET @lmsg = ERROR_MESSAGE();
+
+								EXEC spActivityLogs
+									 @pButtonName    = @pActivity,
+									 @pErrorMessage  = @lmsg,
+									 @pModuleID      = @pModuleID,
+									 @pUser          = @pUserName,
+									 @pTimeStamp     = @lTimeStamp,
+									 @pAdditionalMsg = @lAddmsg,
+									 @pTransactional = 1;
+
+								RAISERROR (@lmsg,16,1);
+
+							END CATCH;
+
+							FETCH NEXT FROM LeaveCursor INTO
+								 @lLeaveType
+								,@lDTLeave
+								,@lLeaveHrsFrom
+								,@lLeaveHrsTo
+								,@lWorkHrs
+								,@lReasonCode
+								,@lDTNotice
+								,@lFileNotice
+								,@lReasonDesc;
+
+						END
+
+					CLOSE LeaveCursor
+					DEALLOCATE LeaveCursor
+
+				/*
+					SEND EMAIL
+				*/
+
+				EXEC spAAMProcess
+					 @pOption     = 40,
+					 @pEmailBody  = @ltableHTMLTotal,
+					 @pAGHID      = @lAGHID,
+					 @pUser       = @pUserName,
+					 @pStatus     = @lStatus,
+					 @pTimeStamp  = @lTimeStamp;
+
+					COMMIT TRANSACTION;
+				END TRY
+				BEGIN CATCH
+
+					IF @@TRANCOUNT > 0
+						ROLLBACK TRANSACTION;
+
+					SET @msg = ERROR_MESSAGE();
+					EXEC spActivityLogs
+									 @pButtonName    = @pActivity,
+									 @pErrorMessage  = @msg,
+									 @pModuleID      = @pModuleID,
+									 @pUser          = @pUserName,
+									 @pTimeStamp     = @lTimeStamp,
+									 @pAdditionalMsg = @lAddmsg,
+									 @pTransactional = 1;
+
+					RAISERROR (@msg,16,1);
+
+
+				END CATCH
+
+			END
 
 		END
 	IF @pOption = 33 -- GET ALL Leave Balance per user
@@ -1351,7 +1598,8 @@ sp_help tblHR_PersonnelLeaves
 		END
 	IF @pOption = 34 -- OFFICIAL BUSINESS SAVE FOR APPROVAL
 		BEGIN
-
+			SELECT @lRanking = EmployeeGroup, @lDepartmentCode = DepartmentCode, @lUnitCode = UnitCode, @lCostCenter = CostCenter  FROM tblHR_PersonnelMaster WHERE UserName = @pUserName
+			
 			CREATE TABLE #AAMProcessResultsOB
 			(
 				AHID INT,
@@ -1372,28 +1620,13 @@ sp_help tblHR_PersonnelLeaves
 				END
 
 				DECLARE OBCursor CURSOR LOCAL FAST_FORWARD FOR
-					SELECT 
-						TransID,
-						IDNumber,
-						Purpose,
-						Reason,
-						Destination,
-						OBFrom,
-						OBTo,
-						NumHours
+					SELECT  TransID, IDNumber, Purpose, Attachment, Reason, Destination, OBFrom, OBTo, NumHours
 					FROM @pTypeLEAPOfficialBusiness;
 
 				OPEN OBCursor;
 
 				FETCH NEXT FROM OBCursor INTO
-					@lTransID,
-					@lIDNumber,
-					@lPurpose,
-					@lReason,
-					@lDestination,
-					@lOBFrom,
-					@lOBTo,
-					@lNumHours;
+					@lTransID, @lIDNumber, @lPurpose, @lAttachment, @lReason, @lDestination, @lOBFrom, @lOBTo, @lNumHours;
 
 				WHILE @@FETCH_STATUS = 0
 				BEGIN
@@ -1416,7 +1649,7 @@ sp_help tblHR_PersonnelLeaves
 
 						SET @lAHID = @@IDENTITY;
 
-						SELECT @lStatusID = RID, @lStatus = RValue
+						SELECT *
 						FROM tblReferenceMaster
 						WHERE MID = @lMID 
 						AND RCode = 'FOR APPROVAL' 
@@ -1426,9 +1659,9 @@ sp_help tblHR_PersonnelLeaves
 							INSERT OFFICIAL BUSINESS
 						*/
 						INSERT INTO tblLEAPOfficialBusiness
-	                      ( IDNumber   ,Purpose   ,Reason   ,DTApplied   ,NumHours   ,Destination   ,OBFrom   ,OBTo )
+	                      ( IDNumber   ,Purpose   ,Attachment  ,Reason   ,DTApplied   ,NumHours   ,Destination   ,OBFrom   ,OBTo )
 						VALUES
-	                      ( @lIDNumber ,@lPurpose ,@lReason ,@lTimeStamp ,@lNumHours ,@lDestination ,@lOBFrom ,@lOBTo );
+	                      ( @lIDNumber ,@lPurpose ,@lAttachment,@lReason ,@lTimeStamp ,@lNumHours ,@lDestination ,@lOBFrom ,@lOBTo );
 
 						SET @lID = SCOPE_IDENTITY();
 
@@ -1437,19 +1670,31 @@ sp_help tblHR_PersonnelLeaves
 						*/
 						SELECT @lCID = CID
 						FROM tblAAMCategory
-						WHERE Code = 'LeAPOBApproval';
+						WHERE Code = 'OfficialBusiness'
 
 						DELETE @lTypeAAMAD;
 
 							INSERT INTO @lTypeAAMAD
-							( ModuleName ,CID	,ID		,TableID ,SubCategory,SubCategoryValue	,ALHID ,CurrentStat ,PrevStat ,TableName						,CreatedBy ,Reason		,RequestColumn ,ExpirationDate )
+							( ModuleName ,CID	,ID		,TableID ,SubCategory ,SubCategoryValue	,ALHID ,CurrentStat ,PrevStat ,TableName				,CreatedBy  ,Reason		,RequestColumn ,ExpirationDate )
 							VALUES
-							( 'HR'		 ,@lCID	,@lID	,@lID	 ,''		 ,''				,@lAHID,@lStatusID  ,0		  ,'tblLEAPOfficialBusiness'	,@pUserName ,@lReason	,'StatusID'	  ,NULL );
+							( 'LEAP'	 ,@lCID	,@lID	,@lID	 ,'Department',@lUnitCode		,@lAHID,@lStatusID  ,0		  ,'tblLEAPOfficialBusiness',@pUserName ,@lReason	,'StatusID'	  ,NULL );
+
+
+							select * from @lTypeAAMAD
+						DELETE @lTypeAAMAttchmnts;
+
+						INSERT INTO @lTypeAAMAttchmnts
+							(TableID,Category,Code,PrimaryFile	,FileName		,FilePath)
+						SELECT @lID	,Category,Code,1			,@lAttachment	,'Official Business files/'
+						FROM tblConfiguration_ActivePath
+							WHERE Category = 'LEAP'
+						AND Code = 'OfficialBusinessApp';
 
 
 						/*
 							PROCESS AAM
 						*/
+
 						INSERT INTO #AAMProcessResultsOB
 						(
 							AHID, AID, ADID, AGHID, AGDID, PRIMARYID
@@ -1478,6 +1723,7 @@ sp_help tblHR_PersonnelLeaves
 							*/
 							SELECT 
 								@lPurpose = Purpose,
+								@lAttachment = Attachment,
 								@lReason = Reason,
 								@lDestination = Destination,
 								@lOBFrom = OBFrom,
@@ -1544,6 +1790,7 @@ sp_help tblHR_PersonnelLeaves
 						@lTransID,
 						@lIDNumber,
 						@lPurpose,
+						@lAttachment,
 						@lReason,
 						@lDestination,
 						@lOBFrom,
@@ -1583,6 +1830,203 @@ sp_help tblHR_PersonnelLeaves
 				RAISERROR(@msg,16,1);
 			END CATCH;
 		END
-	
+
+	IF @pOption = 35 -- GET ALL tblHR_PeriodSchedule JAKE
+		BEGIN
+			SELECT PID, [Period], MonthStart, MonthEnd, DTCreated, CreatedBy, DTModified, LastUpdateBy
+			FROM tblHR_PeriodSchedule 
+
+		END
+	IF @pOption = 36 -- UPSERT for tblHR_PeriodSchedule --Jake
+		BEGIN
+			BEGIN TRY
+
+				MERGE tblHR_PeriodSchedule AS TARGET
+				USING ( SELECT @pPID AS PID, @pPeriod AS Period, @pMonthStart AS MonthStart, @pMonthEnd AS MonthEnd) AS SOURCE
+				ON TARGET.PID = SOURCE.PID 
+
+				WHEN MATCHED THEN
+					UPDATE SET  [Period] = @pPeriod, MonthStart = @pMonthStart, MonthEnd = @pMonthEnd, LastUpdateBy = @pUserName, DTModified = GETDATE()
+
+				WHEN NOT MATCHED THEN
+					INSERT ( [Period]	, MonthStart, MonthEnd, CreatedBy, DTCreated)
+					VALUES ( @pPeriod, @pMonthStart, @pMonthEnd	, @pUserName, GETDATE());
+
+			END TRY
+			BEGIN CATCH
+				THROW;
+			END CATCH
+		END
+
+	IF @pOption = 37 -- Call in option 26 for earned leave computation
+		BEGIN
+			BEGIN TRY
+
+				DECLARE @lCurrentDate DATE,
+						@lEndDate DATE,
+						@lMonth INT,
+						@lGroupID INT,
+						@lLeaveHours DECIMAL(18,2),
+						@lRemainingBalance DECIMAL(18,2),
+						@lInsertValue DECIMAL(18,2),
+						@lSQL NVARCHAR(MAX);
+
+				SET @lCurrentDate = @pDTFrom;
+				SET @lEndDate = @pDTTo;
+
+				SET @lRemainingBalance = ISNULL(@pLeaveBalance,0);
+
+				SELECT @lGroupID = GroupID
+				FROM tblHR_PersonnelMaster
+				WHERE IDNumber = @pIDNumber;
+
+				WHILE @lCurrentDate <= @lEndDate
+				BEGIN
+
+					SET @lMonth = MONTH(@lCurrentDate);
+
+					-- Get monthly entitlement
+					SET @lSQL = '
+						SELECT @lLeaveHours = LeaveHours' + RIGHT('0' + CAST(@lMonth AS VARCHAR), 2) + '
+						FROM tblHR_MonthlyEntPerGroup
+						WHERE GroupID = @lGroupID
+						  AND LeaveCode = @pLeaveCode
+					';
+
+					EXEC sp_executesql
+						@lSQL,
+						N'@lLeaveHours DECIMAL(18,2) OUTPUT,
+						  @lGroupID INT,
+						  @pLeaveCode VARCHAR(10)',
+						@lLeaveHours OUTPUT,
+						@lGroupID,
+						@pLeaveCode;
+
+					SET @lLeaveHours = ISNULL(@lLeaveHours,0);
+
+					-- ⭐ NEW LOGIC (ALLOW PARTIAL + CARRY OVER)
+					IF @lRemainingBalance >= @lLeaveHours
+					BEGIN
+						SET @lInsertValue = @lLeaveHours;
+						SET @lRemainingBalance = @lRemainingBalance - @lLeaveHours;
+					END
+					ELSE IF @lRemainingBalance > 0
+					BEGIN
+						SET @lInsertValue = @lRemainingBalance;
+						SET @lRemainingBalance = 0;
+					END
+					ELSE
+					BEGIN
+						SET @lInsertValue = 0;
+					END
+
+					-- Insert / Update
+					IF EXISTS (
+						SELECT 1
+						FROM tblEarnedLeaveQuota
+						WHERE IDNumber = @pIDNumber
+						  AND LeaveCode = @pLeaveCode
+						  AND YearValid = YEAR(@pDTTo)
+					)
+					BEGIN
+
+						UPDATE tblEarnedLeaveQuota
+						SET
+							January   = January   + CASE WHEN @lMonth = 1  THEN @lInsertValue ELSE 0 END,
+							February  = February  + CASE WHEN @lMonth = 2  THEN @lInsertValue ELSE 0 END,
+							March     = March     + CASE WHEN @lMonth = 3  THEN @lInsertValue ELSE 0 END,
+							April     = April     + CASE WHEN @lMonth = 4  THEN @lInsertValue ELSE 0 END,
+							May       = May       + CASE WHEN @lMonth = 5  THEN @lInsertValue ELSE 0 END,
+							June      = June      + CASE WHEN @lMonth = 6  THEN @lInsertValue ELSE 0 END,
+							July      = July      + CASE WHEN @lMonth = 7  THEN @lInsertValue ELSE 0 END,
+							August    = August    + CASE WHEN @lMonth = 8  THEN @lInsertValue ELSE 0 END,
+							September = September + CASE WHEN @lMonth = 9  THEN @lInsertValue ELSE 0 END,
+							October   = October   + CASE WHEN @lMonth = 10 THEN @lInsertValue ELSE 0 END,
+							November  = November  + CASE WHEN @lMonth = 11 THEN @lInsertValue ELSE 0 END,
+							December  = December  + CASE WHEN @lMonth = 12 THEN @lInsertValue ELSE 0 END,
+
+							LeaveTotalBalance = ISNULL(LeaveTotalBalance,0) + @lInsertValue
+
+						WHERE IDNumber = @pIDNumber
+						  AND LeaveCode = @pLeaveCode
+						  AND YearValid = YEAR(@pDTTo);
+
+					END
+					ELSE
+					BEGIN
+
+						INSERT INTO tblEarnedLeaveQuota
+						(
+							IDNumber,
+							LeaveCode,
+							YearValid,
+
+							January,
+							February,
+							March,
+							April,
+							May,
+							June,
+							July,
+							August,
+							September,
+							October,
+							November,
+							December,
+
+							LeaveTotalBalance,
+							CreatedBy,
+							DTCreated
+						)
+						VALUES
+						(
+							@pIDNumber,
+							@pLeaveCode,
+							YEAR(@pDTTo),
+
+							CASE WHEN @lMonth = 1  THEN @lInsertValue ELSE 0 END,
+							CASE WHEN @lMonth = 2  THEN @lInsertValue ELSE 0 END,
+							CASE WHEN @lMonth = 3  THEN @lInsertValue ELSE 0 END,
+							CASE WHEN @lMonth = 4  THEN @lInsertValue ELSE 0 END,
+							CASE WHEN @lMonth = 5  THEN @lInsertValue ELSE 0 END,
+							CASE WHEN @lMonth = 6  THEN @lInsertValue ELSE 0 END,
+							CASE WHEN @lMonth = 7  THEN @lInsertValue ELSE 0 END,
+							CASE WHEN @lMonth = 8  THEN @lInsertValue ELSE 0 END,
+							CASE WHEN @lMonth = 9  THEN @lInsertValue ELSE 0 END,
+							CASE WHEN @lMonth = 10 THEN @lInsertValue ELSE 0 END,
+							CASE WHEN @lMonth = 11 THEN @lInsertValue ELSE 0 END,
+							CASE WHEN @lMonth = 12 THEN @lInsertValue ELSE 0 END,
+
+							@lInsertValue,
+							@pUserName,
+							GETDATE()
+						);
+
+					END
+
+					SET @lCurrentDate = DATEADD(MONTH, 1, @lCurrentDate);
+
+				END
+
+			END TRY
+			BEGIN CATCH
+				RAISERROR('Error inserting Earned Leave Quota (Option 38).', 16, 1);
+			END CATCH
+		END
+
+	IF @pOption = 38 -- Get All Biometric Server
+		BEGIN
+			SELECT ServerID,IPAddress,[Port],Office,[Description] FROM tblLEAPBiometricServers
+		END
+
+
+
+
+
+
+
+
+
+
 	END
 GO

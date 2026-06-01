@@ -10,6 +10,7 @@ CREATE TYPE typeLEAPOfficialBusiness AS TABLE
     TransID        BIGINT,
     IDNumber       VARCHAR(10) NOT NULL,
     Purpose        VARCHAR(255) NULL,
+	Attachment	   VARCHAR(255) NULL,
     Reason         VARCHAR(MAX) NULL,
     Destination    VARCHAR(MAX) NULL,
     OBFrom         DATETIME NULL,
