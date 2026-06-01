@@ -6,15 +6,17 @@ GO
 CREATE TYPE typeLeaveForApproval AS TABLE
 ( 
 LeaveType VARCHAR(55)
-,DTFrom DATETIME
-,DTTo DATETIME
+,DTLeave DATETIME
+,LeaveHrsFrom VARCHAR(55)
+,LeaveHrsTo VARCHAR(55)
 ,WorkHrs TINYINT
-,Reason VARCHAR(55)
+,ReasonCode VARCHAR(55)
 ,DTNotice DATETIME
 ,FileNotice VARCHAR(55)
 ,ReasonDesc VARCHAR(max)
 );
 GO
+
 
 
 

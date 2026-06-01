@@ -1,8 +1,8 @@
-DROP TYPE TypeLEAPInOurRecords
+DROP TYPE TypeLEAPInOutRecords
 GO
-CREATE TYPE TypeLEAPInOurRecords AS TABLE
+CREATE TYPE TypeLEAPInOutRecords AS TABLE
 ( 
-ServerID VARCHAR(15)
+ServerID INT
 ,IDNumber VARCHAR(10)
 , InOutStatus VARCHAR(18)
 , TimeInOut DATETIME

@@ -130,3 +130,54 @@ BEGIN CATCH
     PRINT 'Rollback failed. Transaction has been reverted.';
     PRINT ERROR_MESSAGE();
 END CATCH;
+
+
+
+GO 
+
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- =========================================
+-- Drop Foreign Key FK_tblHR_PersonnelMaster_tblHR_LeaveEntGroup
+-- =========================================
+IF EXISTS (
+    SELECT 1
+    FROM sys.foreign_keys
+    WHERE name = 'FK_tblHR_PersonnelMaster_tblHR_LeaveEntGroup'
+)
+BEGIN
+    ALTER TABLE tblHR_PersonnelMaster
+    DROP CONSTRAINT FK_tblHR_PersonnelMaster_tblHR_LeaveEntGroup;
+
+    PRINT 'Foreign Key FK_tblHR_PersonnelMaster_tblHR_LeaveEntGroup dropped';
+END
+ELSE
+BEGIN
+    PRINT 'Foreign Key FK_tblHR_PersonnelMaster_tblHR_LeaveEntGroup does not exist';
+END
+GO
+
+-- =========================================
+-- Drop Column GroupID from tblHR_PersonnelMaster
+-- =========================================
+IF EXISTS (
+    SELECT 1
+    FROM sys.columns
+    WHERE Name = N'GroupID'
+      AND Object_ID = Object_ID(N'tblHR_PersonnelMaster')
+)
+BEGIN
+    ALTER TABLE tblHR_PersonnelMaster
+    DROP COLUMN GroupID;
+
+    PRINT 'Column GroupID dropped from tblHR_PersonnelMaster';
+END
+ELSE
+BEGIN
+    PRINT 'Column GroupID does not exist in tblHR_PersonnelMaster';
+END
+GO
