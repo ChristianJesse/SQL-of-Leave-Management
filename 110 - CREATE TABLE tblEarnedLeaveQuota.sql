@@ -3,12 +3,14 @@
 
 
 
-
 CREATE TABLE tblEarnedLeaveQuota (
     IDNumber   VARCHAR(10) NOT NULL,
     LeaveCode  VARCHAR(10) NOT NULL,
 	YearValid  INT NULL,
-	LeaveTotalBalance TINYINT NULL,
+	LeaveTotalBalance FLOAT NULL,
+	AppliedLeave	FLOAT NULL,
+	ForPosting		FLOAT NULL,
+	LeaveUsed		FLOAT NULL,
 
     January    TINYINT NULL,
     February   TINYINT NULL,

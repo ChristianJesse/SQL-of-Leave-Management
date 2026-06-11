@@ -12,9 +12,8 @@ BEGIN
     (
         [TransID]       BIGINT IDENTITY(1,1) PRIMARY KEY,
         [IDNumber]      VARCHAR(10) NOT NULL,
-        [Purpose]       VARCHAR(255) NULL,
+        [Purpose]       VARCHAR(MAX) NULL,
         [Attachment]    VARCHAR(255) NULL,
-        [Reason]        VARCHAR(MAX) NULL,
         [Destination]   VARCHAR(MAX) NULL,
         [OBFrom]        DATETIME NULL,
         [OBTo]          DATETIME NULL,
@@ -85,7 +84,6 @@ INSERT INTO @columns VALUES
 ('IDNumber', N'Employee ID number associated with the official business request.'),
 ('Purpose', N'Purpose of the official business request.'),
 ('Attachment', N'Attachment Filename of the official business request.'),
-('Reason', N'Reason or justification for the official business request.'),
 ('Destination', N'Destination or location of the official business activity.'),
 ('OBFrom', N'Start date and time of the official business schedule.'),
 ('OBTo', N'End date and time of the official business schedule.'),

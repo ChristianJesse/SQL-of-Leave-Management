@@ -8,6 +8,7 @@ BEGIN
         LogID BIGINT IDENTITY(1,1) NOT NULL PRIMARY KEY,
         Activity VARCHAR(55) NULL,
 
+		RDID INT NOT NULL,
         SchedCode VARCHAR(10) NOT NULL,
         RestDay TINYINT NOT NULL,
 

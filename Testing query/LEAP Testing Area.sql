@@ -27,7 +27,7 @@ SP_HELP tblHR_AbsentType
 declare @typeLeaveForApproval  typeLeaveForApproval 
 INSERT INTO @typeLeaveForApproval (LeaveType,DTLeave,LeaveHrsFrom,LeaveHrsTo,WorkHrs,ReasonCode,DTNotice,FileNotice,ReasonDesc)
 VALUES 
-('BL'
+('VL'
 ,'05/21/2026'
 ,'08:00'
 ,'18:30'
@@ -38,11 +38,11 @@ VALUES
 ,'test');
 
 --SELECT * FROM @typeLeaveForApproval
-EXEC spHR_ZKT @pOption = 32
+EXEC spLEAP  @pOption = 32
 ,@pTypeLeaveForApproval=@typeLeaveForApproval
 ,@pActivity='SAVE'
 ,@pUserName = 'COORETO'
-,@pModuleID = '10894'
+,@pModuleID = '11000'
 ,@pIDNumber = '00002536'
 
 sp_help tblHR_PersonnelLeaves
@@ -60,15 +60,20 @@ select * from tblAAMApproverGroupMembers where AID in (select AID from tblAAMApp
 select * from tblAAMApproverPending where CreatedBy ='COORETO'
 SELECT * FROM tblAAMApproverAttachments
 SELECT * FROM tblHR_PersonnelLeaves WHERE AGHID IS NOT NULL
+select * from tblLEAPOfficialBusiness
  
 DELETE tblAAMApprover where TableName in ('tblHR_PersonnelLeaves','tblLEAPOfficialBusiness')
 DELETE tblAAMApproverGroupHeader where AGHID in (select AGHID from tblAAMApproverPending where CreatedBy ='COORETO')
 DELETE tblAAMApproverGroupMembers where AID in (select AID from tblAAMApprover where TableName in ('tblHR_PersonnelLeaves','tblLEAPOfficialBusiness') )
 DELETE tblAAMApproverPending where CreatedBy ='COORETO'
 delete tblHR_PersonnelLeaves where TransID > 70245
-update tblHR_PersonnelLeaveBalance set LeaveBalance = 99,ForPosting=0,AppliedLeave=0 where IDNumber ='00002536'
+update tblHR_PersonnelLeaveBalance set LeaveBalance = 80,ForPosting=0,AppliedLeave=0 where IDNumber ='00002536'
+update tblEarnedLeaveQuota set LeaveTotalBalance = 80,ForPosting=0,AppliedLeave=0 where IDNumber ='00002536'
 UPDATE tblHR_PersonnelLeaves SET BalanceAfter = 0 WHERE AGHID IS NOT NULL
 delete  tblAAMApproverAttachments
+delete tblLEAPOfficialBusiness
+
+
 
 select * from tblHR_PersonnelLeaves where TransID > 70245
 
@@ -161,13 +166,18 @@ EXEC spLEAP @pOption = 7
 ,@pUnitCode=''
 
 
+select * from tblLEAPLeaveTypeQuota 
+select * from tblEarnedLeaveQuota
+select * from tblHR_PersonnelLeaveBalance where  CreatedBy is not null
+select * from tblHR_LeaveEntGroup
 
+SELECT * FROM tblHR_MonthlyEntPerGroup WHERE LeaveCode = 'VL'
 select * from tblhr_periodschedule
 
+select DTRegular,* from tblHR_PersonnelMaster  where username='cooreto'
 
-
-
-
+--insert into  tblHR_PersonnelLeaveBalance (IDNumber,LeaveCode,DTFrom,DTTo,Quota,LeaveBalance,AppliedLeave,ForPosting,LeaveUsed,Locked,LockedBy,LockedOn)
+--select * from NDESS_DEV01.dbo.tblHR_PersonnelLeaveBalance
 
 
 
@@ -217,7 +227,9 @@ EXEC spLEAP @pOption = 34
 
 
 
+SELECT * FROM tblLEAPInOutRecords 
 
+SELECT * FROM tblLEAPBiometricServers
 
 
 

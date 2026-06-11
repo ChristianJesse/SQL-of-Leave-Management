@@ -8,3 +8,14 @@ ServerID INT
 , TimeInOut DATETIME
 );
 GO
+
+
+CREATE NONCLUSTERED INDEX tblLEAPInOutRecords_Time
+ON tblLEAPInOutRecords
+(
+    TimeInOut,
+    IDNumber,
+    InOutStatus
+);
+
+

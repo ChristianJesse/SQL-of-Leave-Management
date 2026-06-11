@@ -71,7 +71,8 @@ BEGIN
 				,B.IDNumber
 				,B.LastName +', '+ B.FirstName AS [Emplyee Name]
 				,A.NumHours AS [Leave Hours]
-				,CONVERT(varchar(22), A.DTNotice, 101) AS [Date Notice]
+				--,CONVERT(varchar(22), A.DTNotice, 101) AS [Date Notice]
+				,FORMAT(A.DTNotice, 'MM/dd/yyyy hh:mm:ss tt') AS [Date Notice]
 				,FORMAT(A.DTApplied, 'MM/dd/yyyy hh:mm:ss tt') AS [Date Submitted]
 				,A.AGHID
 				,(SELECT LeaveBalanceID 
@@ -178,13 +179,25 @@ BEGIN
 		END
 	ELSE IF @pOption = 4 -- GET ALL OB FOR APPROVAL
 		BEGIN
-			SELECT * FROM tblLEAPOfficialBusiness
+			SELECT TransID
+			,A.IDNumber
+			,B.LastName +', '+ B.FirstName AS [Emplyee Name]
+
+			,A.Purpose
+			,A.Attachment
+			,A.Destination
+			,FORMAT(A.OBFrom, 'MM/dd/yyyy hh:mm:ss tt') AS [OB From]
+			,FORMAT(A.OBTo, 'MM/dd/yyyy hh:mm:ss tt') AS [OB To]
+			,A.NumHours
+			,FORMAT(A.DTApplied, 'MM/dd/yyyy hh:mm:ss tt') AS [Date Applied]
+			,A.AGHID
+			FROM tblLEAPOfficialBusiness A 
+			LEFT JOIN tblHR_PersonnelMaster B ON A.IDNumber = B.IDNumber
 		END
 	ELSE IF @pOption = 5 -- OB Email Notification SEND 
 		BEGIN
 			SELECT 
 				@lPurpose = Purpose,
-				@lReason = Reason,
 				@lDestination = Destination,
 				@lOBFrom = OBFrom,
 				@lOBTo = OBTo,
@@ -203,9 +216,6 @@ BEGIN
 
 								+ '<tr><td style="border:1px solid #000;"><b>Purpose</b></td>'
 								+ '<td style="border:1px solid #000;">' + ISNULL(@lPurpose,'') + '</td></tr>'
-
-								+ '<tr><td style="border:1px solid #000;"><b>Reason</b></td>'
-								+ '<td style="border:1px solid #000;">' + ISNULL(@lReason,'') + '</td></tr>'
 
 								+ '<tr><td style="border:1px solid #000;"><b>Destination</b></td>'
 								+ '<td style="border:1px solid #000;">' + ISNULL(@lDestination,'') + '</td></tr>'
