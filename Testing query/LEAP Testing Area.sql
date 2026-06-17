@@ -224,14 +224,17 @@ EXEC spLEAP @pOption = 34
 
 
 
+SELECT * FROM tblLEAPLogsBioService ORDER BY ID DESC
 
+SELECT * FROM tblConfiguration WHERE Category ='LEAP' and Code ='BioLookBack'
+SELECT * FROM tblLEAPBiometricServers
+SELECT * FROM tblLEAPInOutRecords ORDER BY TimeInOut DESC
 
-
-SELECT * FROM tblLEAPInOutRecords 
+SELECT * FROM update tblLEAPBiometricServers set IPAddress ='192.168.3.49' where Office ='wto'
 
 SELECT * FROM tblLEAPBiometricServers
 
+SELECT * FROM tblLEAPInOutRecords where idnumber ='00002536'ORDER BY TimeInOut DESC
 
-
-
+EXEC spLEAP @pOption = 39,@pCode='BioInterval'
 

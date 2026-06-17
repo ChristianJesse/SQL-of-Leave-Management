@@ -73,7 +73,7 @@ BEGIN TRY
         (NULL, 1, 'MyTeam', '../LeAP/LeAPMyTeam.aspx', 1, 'SCM', 1, 0, @lMID),
         (NULL, 1, 'Maintenance', '', 2, 'SCM', 1, 0, @lMID),
         (NULL, 1, 'Post Approved Leave', '../LeAP/LeAPPostApprovedLeaves.aspx', 3, 'SCM', 1, 0, @lMID),
-        (NULL, 1, 'Leave Encashment', '../LeAP/LeAPLeaveEncashment.aspx', 4, 'SCM', 1, 0, @lMID),
+        (NULL, 1, 'Leave Balance Settlement', '../LeAP/LeAPLeaveBalanceSettlement.aspx', 4, 'SCM', 1, 0, @lMID),
 
 
         -- Level 3

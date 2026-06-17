@@ -170,8 +170,6 @@ BEGIN
 			SET @ltableHTMLTotal += @ltableHTML;
 			SET @ltableHTMLTotal += '<hr style="border:1px dashed #999; margin:20px 0;" />';
 
-			SELECT * FROM tblErrorMessages
-
 			
 			SET @oAAMAdditionalEmailHtml = @ltableHTMLTotal;
 

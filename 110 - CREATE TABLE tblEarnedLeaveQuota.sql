@@ -1,16 +1,16 @@
 
-
-
-
+-- drop table tblEarnedLeaveQuota
 
 CREATE TABLE tblEarnedLeaveQuota (
     IDNumber   VARCHAR(10) NOT NULL,
     LeaveCode  VARCHAR(10) NOT NULL,
 	YearValid  INT NULL,
-	LeaveTotalBalance FLOAT NULL,
-	AppliedLeave	FLOAT NULL,
-	ForPosting		FLOAT NULL,
-	LeaveUsed		FLOAT NULL,
+	LeaveTotalBalance	FLOAT NULL,
+	ForApproval		FLOAT NULL,
+	ApprovedLeave	FLOAT NULL,
+	--ForPosting		FLOAT NULL,
+	PostedLeave		FLOAT NULL,
+	SettledLeave	FLOAT NULL,
 
     January    TINYINT NULL,
     February   TINYINT NULL,

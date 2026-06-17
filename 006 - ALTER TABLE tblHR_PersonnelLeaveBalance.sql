@@ -7,9 +7,7 @@ BEGIN TRY
 
     BEGIN TRAN
 
-    /*========================================================
-     ADD NEW COLUMNS
-    ========================================================*/
+    /*======================================================== ADD DTCreated  ========================================================*/
 
     IF COL_LENGTH('tblHR_PersonnelLeaveBalance', 'DTCreated') IS NULL
     BEGIN
@@ -22,6 +20,8 @@ BEGIN TRY
     BEGIN
         PRINT 'DTCreated column already exists.'
     END
+
+/*========================================================  ADD DTModified ========================================================*/
 
 
     IF COL_LENGTH('tblHR_PersonnelLeaveBalance', 'CreatedBy') IS NULL
@@ -36,6 +36,7 @@ BEGIN TRY
         PRINT 'CreatedBy column already exists.'
     END
 
+/*========================================================  ADD DTModified ========================================================*/
 
     IF COL_LENGTH('tblHR_PersonnelLeaveBalance', 'DTModified') IS NULL
     BEGIN
@@ -49,6 +50,7 @@ BEGIN TRY
         PRINT 'DTModified column already exists.'
     END
 
+/*========================================================  ADD LastUpdateBy ========================================================*/
 
     IF COL_LENGTH('tblHR_PersonnelLeaveBalance', 'LastUpdateBy') IS NULL
     BEGIN
@@ -63,9 +65,7 @@ BEGIN TRY
     END
 
 
-    /*========================================================
-     ADD IDENTITY COLUMN
-    ========================================================*/
+/*========================================================  ADD IDENTITY COLUMN ========================================================*/
 
     IF COL_LENGTH('tblHR_PersonnelLeaveBalance', 'LeaveBalanceID') IS NULL
     BEGIN
@@ -80,10 +80,8 @@ BEGIN TRY
     END
 
 
-    /*========================================================
-     OPTIONAL: MAKE PRIMARY KEY
-    ========================================================*/
-    /*
+/*======================================================== OPTIONAL: MAKE PRIMARY KEY ========================================================*/
+   
     IF NOT EXISTS (
         SELECT 1
         FROM sys.key_constraints
@@ -101,8 +99,39 @@ BEGIN TRY
     BEGIN
         PRINT 'Primary key already exists.'
     END
-    */
 
+/*========================================================  ADD GroupID ========================================================*/
+
+
+	IF COL_LENGTH('tblHR_PersonnelLeaveBalance', 'GroupID') IS NULL
+		BEGIN
+			ALTER TABLE tblHR_PersonnelLeaveBalance
+			ADD GroupID SMALLINT  NULL;
+
+			PRINT 'GroupID column added.'
+		END
+	ELSE
+		BEGIN
+			PRINT 'GroupID column already exists.'
+		END
+
+	IF NOT EXISTS ( SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_tblHR_PersonnelLeaveBalance_GroupID' )
+		BEGIN
+			ALTER TABLE tblHR_PersonnelLeaveBalance
+			ADD CONSTRAINT FK_tblHR_PersonnelLeaveBalance_GroupID
+				FOREIGN KEY (GroupID)
+				REFERENCES tblHR_LeaveEntGroup(GroupID);
+
+			PRINT 'Foreign key added.'
+		END
+	ELSE
+		BEGIN
+			PRINT 'Foreign key already exists.'
+		END
+
+
+
+/*========================================================   ========================================================*/
 
     COMMIT TRAN
 
