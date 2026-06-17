@@ -100,8 +100,8 @@ BEGIN TRY
         PRINT 'Primary key already exists.'
     END
 
-/*========================================================  ADD GroupID ========================================================*/
-
+/*========================================================  ADD GroupID  test ========================================================*/
+  
 
 	IF COL_LENGTH('tblHR_PersonnelLeaveBalance', 'GroupID') IS NULL
 		BEGIN
