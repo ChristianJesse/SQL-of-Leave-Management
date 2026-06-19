@@ -72,17 +72,20 @@ BEGIN TRY
         -- Level 2
         (NULL, 1, 'MyTeam', '../LeAP/LeAPMyTeam.aspx', 1, 'SCM', 1, 0, @lMID),
         (NULL, 1, 'Maintenance', '', 2, 'SCM', 1, 0, @lMID),
-        (NULL, 1, 'Post Approved Leave', '../LeAP/LeAPPostApprovedLeaves.aspx', 3, 'SCM', 1, 0, @lMID),
-        (NULL, 1, 'Leave Encashment', '../LeAP/LeAPLeaveEncashment.aspx', 4, 'SCM', 1, 0, @lMID),
+		(NULL, 1, 'Period Start', '', 3, 'SCM', 1, 0, @lMID),
+        (NULL, 1, 'Post Approved Leave', '../LeAP/LeAPPostApprovedLeaves.aspx', 4, 'SCM', 1, 0, @lMID),
+        (NULL, 1, 'Leave Balance Settlement', '../LeAP/LeAPLeaveBalanceSettlement.aspx', 5, 'SCM', 1, 0, @lMID),
 
 
         -- Level 3
-        (NULL, 3, 'Leaves', '../LeAP/LeAPLeaveMaintenance.aspx', 1, 'SCM', 1, 0, @lMID),
-        (NULL, 3, 'Leave Reasons', '../LeAP/LeAPReasonMaintenance.aspx', 2, 'SCM', 1, 0, @lMID),
-        (NULL, 3, 'Schedules', '../LeAP/LeAPScheduleMaintenance.aspx', 3, 'SCM', 1, 0, @lMID),
-        (NULL, 3, 'Holidays', '../LeAP/LeAPHolidayMaintenance.aspx', 4, 'SCM', 1, 0, @lMID),
-        (NULL, 3, 'Leave Quota', '../LeAP/LeAPLeaveQuotaMaintenance.aspx', 5, 'SCM', 1, 0, @lMID),
-        (NULL, 3, 'Leave Group', '../LeAP/LeAPLeaveGroupMaintenance.aspx', 6, 'SCM', 1, 0, @lMID);
+		(NULL, 4, 'Periods', '../LeAP/LeAPPeriodMaintenance.aspx',			1, 'SCM', 1, 0, @lMID),
+		(NULL, 4, 'Leave Quota', '../LeAP/LeAPLeaveQuotaMaintenance.aspx',	2, 'SCM', 1, 0, @lMID),
+
+        (NULL, 3, 'Leaves', '../LeAP/LeAPLeaveMaintenance.aspx',			1, 'SCM', 1, 0, @lMID),
+        (NULL, 3, 'Leave Reasons', '../LeAP/LeAPReasonMaintenance.aspx',	2, 'SCM', 1, 0, @lMID),
+        (NULL, 3, 'Schedules', '../LeAP/LeAPScheduleMaintenance.aspx',		3, 'SCM', 1, 0, @lMID),
+        (NULL, 3, 'Holidays', '../LeAP/LeAPHolidayMaintenance.aspx',		4, 'SCM', 1, 0, @lMID),
+        (NULL, 3, 'Leave Group', '../LeAP/LeAPLeaveGroupMaintenance.aspx',	5, 'SCM', 1, 0, @lMID);
 		
     -- =========================================
     -- Cursor
