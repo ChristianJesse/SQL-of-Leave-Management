@@ -19,15 +19,9 @@
     </LogicalFolder>
     <LogicalFolder Name="Queries" Type="0" Sorted="true">
       <Items>
-        <FileNode Name="000 - CREATE TABLE tblEarnedLeaveQuota.sql">
+        <FileNode Name="000 - RollBack - tblHR_AbsentType.sql">
           <AssociatedConnectionMoniker />
           <AssociatedConnSrvName />
-          <AssociatedConnUserName />
-          <FullPath>000 - CREATE TABLE tblEarnedLeaveQuota.sql</FullPath>
-        </FileNode>
-        <FileNode Name="000 - RollBack - tblHR_AbsentType.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
           <AssociatedConnUserName />
           <FullPath>000 - RollBack - tblHR_AbsentType.sql</FullPath>
         </FileNode>
@@ -38,40 +32,28 @@
           <FullPath>000 - ROLLBACK.sql</FullPath>
         </FileNode>
         <FileNode Name="000 RollBack - tblHR_PersonnelLeaveBalance.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>000 RollBack - tblHR_PersonnelLeaveBalance.sql</FullPath>
-        </FileNode>
-        <FileNode Name="001 - INSERT tblModule.sql">
           <AssociatedConnectionMoniker />
           <AssociatedConnSrvName />
           <AssociatedConnUserName />
-          <FullPath>001 - INSERT tblModule.sql</FullPath>
+          <FullPath>000 RollBack - tblHR_PersonnelLeaveBalance.sql</FullPath>
         </FileNode>
-        <FileNode Name="002 - INSERT tblConfiguration_ActivePath.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
+        <FileNode Name="001 - ALTER TABLE tblHR_PersonnelMaster.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
           <AssociatedConnUserName />
-          <FullPath>002 - INSERT tblConfiguration_ActivePath.sql</FullPath>
+          <FullPath>001 - ALTER TABLE tblHR_PersonnelMaster.sql</FullPath>
         </FileNode>
-        <FileNode Name="002 - INSERT tblMenu.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
+        <FileNode Name="002 - ALTER TABLE tblHR_AbsentType.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
           <AssociatedConnUserName />
-          <FullPath>002 - INSERT tblMenu.sql</FullPath>
+          <FullPath>002 - ALTER TABLE tblHR_AbsentType.sql</FullPath>
         </FileNode>
-        <FileNode Name="003 - ALTER TABLE tblHR_AbsentType.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
+        <FileNode Name="003 - ALTER TABLE tblHR_PersonnelLeaves.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
           <AssociatedConnUserName />
-          <FullPath>003 - ALTER TABLE tblHR_AbsentType.sql</FullPath>
-        </FileNode>
-        <FileNode Name="003 - ALTER TABLE tblHR_PersonnelLeaveBalance.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>003 - ALTER TABLE tblHR_PersonnelLeaveBalance.sql</FullPath>
+          <FullPath>003 - ALTER TABLE tblHR_PersonnelLeaves.sql</FullPath>
         </FileNode>
         <FileNode Name="004 - ALTER TABLE tblHR_PersonnelLeaves.sql">
           <AssociatedConnectionMoniker />
@@ -79,131 +61,161 @@
           <AssociatedConnUserName />
           <FullPath>004 - ALTER TABLE tblHR_PersonnelLeaves.sql</FullPath>
         </FileNode>
-        <FileNode Name="005 - ALTER TABLE tblHR_WorkSchedule.sql">
+        <FileNode Name="005 - ALTER tblCCD_Holiday.sql">
           <AssociatedConnectionMoniker />
           <AssociatedConnSrvName />
           <AssociatedConnUserName />
-          <FullPath>005 - ALTER TABLE tblHR_WorkSchedule.sql</FullPath>
+          <FullPath>005 - ALTER tblCCD_Holiday.sql</FullPath>
         </FileNode>
-        <FileNode Name="006 - ALTER TABLE tblHR_WorkScheduleRD.sql">
+        <FileNode Name="006 - ALTER TABLE tblHR_PersonnelLeaveBalance.sql">
           <AssociatedConnectionMoniker />
           <AssociatedConnSrvName />
           <AssociatedConnUserName />
-          <FullPath>006 - ALTER TABLE tblHR_WorkScheduleRD.sql</FullPath>
+          <FullPath>006 - ALTER TABLE tblHR_PersonnelLeaveBalance.sql</FullPath>
         </FileNode>
-        <FileNode Name="007 - ALTER TABLE tblHR_PersonnelMaster.sql">
+        <FileNode Name="007 - ALTER TABLE tblHR_WorkSchedule.sql">
           <AssociatedConnectionMoniker />
           <AssociatedConnSrvName />
           <AssociatedConnUserName />
-          <FullPath>007 - ALTER TABLE tblHR_PersonnelMaster.sql</FullPath>
+          <FullPath>007 - ALTER TABLE tblHR_WorkSchedule.sql</FullPath>
+        </FileNode>
+        <FileNode Name="008 - ALTER TABLE tblHR_WorkScheduleRD.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>008 - ALTER TABLE tblHR_WorkScheduleRD.sql</FullPath>
         </FileNode>
         <FileNode Name="101 - CREATE TABLE tblLEAPDivision.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
           <AssociatedConnUserName />
           <FullPath>101 - CREATE TABLE tblLEAPDivision.sql</FullPath>
         </FileNode>
         <FileNode Name="102 - CREATE TABLE tblLEAPDepartment.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
           <AssociatedConnUserName />
           <FullPath>102 - CREATE TABLE tblLEAPDepartment.sql</FullPath>
         </FileNode>
         <FileNode Name="103 - CREATE TABLE tblLEAPSectionHeader.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
           <AssociatedConnUserName />
           <FullPath>103 - CREATE TABLE tblLEAPSectionHeader.sql</FullPath>
         </FileNode>
         <FileNode Name="104 - CREATE TABLE tblLEAPSectionDetails.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
           <AssociatedConnUserName />
           <FullPath>104 - CREATE TABLE tblLEAPSectionDetails.sql</FullPath>
         </FileNode>
-        <FileNode Name="105 - CREATE TABLE tblLEAPInOutRecords.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>105 - CREATE TABLE tblLEAPInOutRecords.sql</FullPath>
-        </FileNode>
-        <FileNode Name="106 - CREATE TABLE tblLEAPOfficialBusiness.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>106 - CREATE TABLE tblLEAPOfficialBusiness.sql</FullPath>
-        </FileNode>
-        <FileNode Name="106 - CREATE TYPE typeHRMLQLeaveTypes.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>106 - CREATE TYPE typeHRMLQLeaveTypes.sql</FullPath>
-        </FileNode>
-        <FileNode Name="106 - CREATE TYPE typeHRMLQSelectedEmployee.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>106 - CREATE TYPE typeHRMLQSelectedEmployee.sql</FullPath>
-        </FileNode>
-        <FileNode Name="106 - CREATE TYPE TypeHRPostApproveLeaved.sql">
+        <FileNode Name="105 - CREATE TABLE tblLEAPBiometricServers.sql">
           <AssociatedConnectionMoniker />
           <AssociatedConnSrvName />
           <AssociatedConnUserName />
-          <FullPath>106 - CREATE TYPE TypeHRPostApproveLeaved.sql</FullPath>
+          <FullPath>105 - CREATE TABLE tblLEAPBiometricServers.sql</FullPath>
         </FileNode>
-        <FileNode Name="106 - CREATE TYPE TypeLEAPInOutRecords.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>106 - CREATE TYPE TypeLEAPInOutRecords.sql</FullPath>
-        </FileNode>
-        <FileNode Name="106 - CREATE TYPE TypeLeaveForApproval.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>106 - CREATE TYPE TypeLeaveForApproval.sql</FullPath>
-        </FileNode>
-        <FileNode Name="106 CREATE TYPE typeLEAPOfficialBusiness.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>106 CREATE TYPE typeLEAPOfficialBusiness.sql</FullPath>
-        </FileNode>
-        <FileNode Name="107 - CREATE TABLE tblLEAPLeaveReason.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>107 - CREATE TABLE tblLEAPLeaveReason.sql</FullPath>
-        </FileNode>
-        <FileNode Name="108 - UPDATE tblHR_AbsentType.sql">
+        <FileNode Name="106 - CREATE TABLE tblLEAPInOutRecords.sql">
           <AssociatedConnectionMoniker />
           <AssociatedConnSrvName />
           <AssociatedConnUserName />
-          <FullPath>108 - UPDATE tblHR_AbsentType.sql</FullPath>
+          <FullPath>106 - CREATE TABLE tblLEAPInOutRecords.sql</FullPath>
         </FileNode>
-        <FileNode Name="109 - INSERT INTO tblHRLeaveReason.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>109 - INSERT INTO tblHRLeaveReason.sql</FullPath>
-        </FileNode>
-        <FileNode Name="110 - CREATE TABLE tblLEAPBiometricServers.sql.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>110 - CREATE TABLE tblLEAPBiometricServers.sql.sql</FullPath>
-        </FileNode>
-        <FileNode Name="201 - CREATE TABLE tblHR_AbsentTypeLogs.sql">
+        <FileNode Name="107 - CREATE TABLE tblLEAPOfficialBusiness.sql">
           <AssociatedConnectionMoniker />
           <AssociatedConnSrvName />
           <AssociatedConnUserName />
-          <FullPath>201 - CREATE TABLE tblHR_AbsentTypeLogs.sql</FullPath>
+          <FullPath>107 - CREATE TABLE tblLEAPOfficialBusiness.sql</FullPath>
         </FileNode>
-        <FileNode Name="202 - CREATE TABLE tblLEAPLeaveReasonLogs.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
+        <FileNode Name="108 - CREATE TABLE tblLEAPLeaveReason.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
           <AssociatedConnUserName />
-          <FullPath>202 - CREATE TABLE tblLEAPLeaveReasonLogs.sql</FullPath>
+          <FullPath>108 - CREATE TABLE tblLEAPLeaveReason.sql</FullPath>
+        </FileNode>
+        <FileNode Name="109 - CREATE TABLE tblLEAPLeaveReasonLogs.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>109 - CREATE TABLE tblLEAPLeaveReasonLogs.sql</FullPath>
+        </FileNode>
+        <FileNode Name="110 - CREATE TABLE tblEarnedLeaveQuota.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>110 - CREATE TABLE tblEarnedLeaveQuota.sql</FullPath>
+        </FileNode>
+        <FileNode Name="111 - CREATE TABLE  tblLEAPLogsBioService.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>111 - CREATE TABLE  tblLEAPLogsBioService.sql</FullPath>
+        </FileNode>
+        <FileNode Name="112 - CREATE TABLE  tblLEAPLeavePeriodHeader.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>112 - CREATE TABLE  tblLEAPLeavePeriodHeader.sql</FullPath>
+        </FileNode>
+        <FileNode Name="113 - CREATE TABLE  tblLEAPLeavePeriodDetailssql.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>113 - CREATE TABLE  tblLEAPLeavePeriodDetailssql.sql</FullPath>
+        </FileNode>
+        <FileNode Name="114 - CREATE TABLE  tblLEAPLeaveSettledDetails.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>114 - CREATE TABLE  tblLEAPLeaveSettledDetails.sql</FullPath>
+        </FileNode>
+        <FileNode Name="115 - CREATE TABLE  tblLEAPLeaveEntGroupHeader.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>115 - CREATE TABLE  tblLEAPLeaveEntGroupHeader.sql</FullPath>
+        </FileNode>
+        <FileNode Name="116 - CREATE TABLE  tblLEAPLeaveEntGroupDetails.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>116 - CREATE TABLE  tblLEAPLeaveEntGroupDetails.sql</FullPath>
+        </FileNode>
+        <FileNode Name="201 - CREATE TYPE TypeLEAPInOutRecords.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>201 - CREATE TYPE TypeLEAPInOutRecords.sql</FullPath>
+        </FileNode>
+        <FileNode Name="202 - CREATE TYPE TypeHRPostApproveLeaved.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>202 - CREATE TYPE TypeHRPostApproveLeaved.sql</FullPath>
+        </FileNode>
+        <FileNode Name="203 - CREATE TYPE typeHRMLQLeaveTypes.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>203 - CREATE TYPE typeHRMLQLeaveTypes.sql</FullPath>
+        </FileNode>
+        <FileNode Name="204 - CREATE TYPE typeHRMLQSelectedEmployee.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>204 - CREATE TYPE typeHRMLQSelectedEmployee.sql</FullPath>
+        </FileNode>
+        <FileNode Name="205 - CREATE TYPE TypeLeaveForApproval.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>205 - CREATE TYPE TypeLeaveForApproval.sql</FullPath>
+        </FileNode>
+        <FileNode Name="206 - CREATE TYPE typeLEAPOfficialBusiness.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>206 - CREATE TYPE typeLEAPOfficialBusiness.sql</FullPath>
         </FileNode>
         <FileNode Name="301 - CREATE TRIGGER trtblHR_AbsentTypeLogs.sql">
           <AssociatedConnectionMoniker />
@@ -217,47 +229,107 @@
           <AssociatedConnUserName />
           <FullPath>302 - CREATE TRIGGER trTblHRLeaveReasonLogs.sql</FullPath>
         </FileNode>
-        <FileNode Name="901 - INSERT tblReferenceMaster.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>901 - INSERT tblReferenceMaster.sql</FullPath>
-        </FileNode>
-        <FileNode Name="LEAP Testing Area.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>LEAP Testing Area.sql</FullPath>
-        </FileNode>
-        <FileNode Name="spAAM_LeAP.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>spAAM_LeAP.sql</FullPath>
-        </FileNode>
-        <FileNode Name="spHR_ZKT.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>spHR_ZKT.sql</FullPath>
-        </FileNode>
-        <FileNode Name="SQLQuery1.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>SQLQuery1.sql</FullPath>
-        </FileNode>
-        <FileNode Name="SQLQuery2.sql">
+        <FileNode Name="303 - CREATE TRIGGER trtblHR_LogsWorkSchedule.sql">
           <AssociatedConnectionMoniker />
           <AssociatedConnSrvName />
           <AssociatedConnUserName />
-          <FullPath>SQLQuery2.sql</FullPath>
+          <FullPath>303 - CREATE TRIGGER trtblHR_LogsWorkSchedule.sql</FullPath>
         </FileNode>
-        <FileNode Name="test.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ndessdev\ndessdev:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ndessdev\ndessdev</AssociatedConnSrvName>
+        <FileNode Name="304 - CREATE TRIGGER trtblHR_LogsWorkScheduleRD.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
           <AssociatedConnUserName />
-          <FullPath>test.sql</FullPath>
+          <FullPath>304 - CREATE TRIGGER trtblHR_LogsWorkScheduleRD.sql</FullPath>
+        </FileNode>
+        <FileNode Name="305 - CREATE TRIGGER tblLeAPPeriod.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>305 - CREATE TRIGGER tblLeAPPeriod.sql</FullPath>
+        </FileNode>
+        <FileNode Name="401 - INSERT tblModule.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>401 - INSERT tblModule.sql</FullPath>
+        </FileNode>
+        <FileNode Name="402 - INSERT tblMenu.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>402 - INSERT tblMenu.sql</FullPath>
+        </FileNode>
+        <FileNode Name="403 - INSERT tblConfiguration_ActivePath.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>403 - INSERT tblConfiguration_ActivePath.sql</FullPath>
+        </FileNode>
+        <FileNode Name="404 - INSERT tblReferenceMaster.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>404 - INSERT tblReferenceMaster.sql</FullPath>
+        </FileNode>
+        <FileNode Name="405 - INSERT INTO tblHRLeaveReason.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>405 - INSERT INTO tblHRLeaveReason.sql</FullPath>
+        </FileNode>
+        <FileNode Name="406 - INSERT INTO tblConfiguration.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>406 - INSERT INTO tblConfiguration.sql</FullPath>
+        </FileNode>
+        <FileNode Name="501 - CREATE TABLE tblHR_LogsWorkSchedule.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>501 - CREATE TABLE tblHR_LogsWorkSchedule.sql</FullPath>
+        </FileNode>
+        <FileNode Name="502 - CREATE TABLE tblHR_LogsWorkScheduleRD.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>502 - CREATE TABLE tblHR_LogsWorkScheduleRD.sql</FullPath>
+        </FileNode>
+        <FileNode Name="503 - CREATE TABLE tblHR_AbsentTypeLogs.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>503 - CREATE TABLE tblHR_AbsentTypeLogs.sql</FullPath>
+        </FileNode>
+        <FileNode Name="508 - UPDATE tblHR_AbsentType.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>508 - UPDATE tblHR_AbsentType.sql</FullPath>
+        </FileNode>
+        <FileNode Name="601 - CREATE VIEW vwLEAPLeaveType.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>601 - CREATE VIEW vwLEAPLeaveType.sql</FullPath>
+        </FileNode>
+        <FileNode Name="999 - RollBack All Changes.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>999 - RollBack All Changes.sql</FullPath>
+        </FileNode>
+        <FileNode Name="dbo.spAAM_LEAP.StoredProcedure.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>dbo.spAAM_LEAP.StoredProcedure.sql</FullPath>
+        </FileNode>
+        <FileNode Name="dbo.spLEAP.StoredProcedure.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>dbo.spLEAP.StoredProcedure.sql</FullPath>
         </FileNode>
       </Items>
     </LogicalFolder>

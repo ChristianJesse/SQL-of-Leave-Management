@@ -1,5 +1,6 @@
-CREATE OR ALTER TRIGGER trg_tblLEAPLeaveTypeQuota_ValidateRange
-ON tblLEAPLeaveTypeQuota
+
+CREATE OR ALTER TRIGGER trg_tblLEAPPeriod_ValidateRange
+ON tblLEAPPeriod
 AFTER INSERT, UPDATE
 AS
 BEGIN
@@ -11,7 +12,7 @@ BEGIN
     IF EXISTS (
         SELECT 1
         FROM inserted i
-        JOIN tblLEAPLeaveTypeQuota t
+        JOIN tblLEAPPeriod t
             ON  t.LeaveCode      = i.LeaveCode
             AND t.PeriodSpecific = i.PeriodSpecific
             AND t.ID <> i.ID
@@ -24,7 +25,7 @@ BEGIN
             STUFF((
                 SELECT ', ' + CAST(t.ID AS NVARCHAR)
                 FROM inserted i
-                JOIN tblLEAPLeaveTypeQuota t
+                JOIN tblLEAPPeriod t
                     ON  t.LeaveCode      = i.LeaveCode
                     AND t.PeriodSpecific = i.PeriodSpecific
                     AND t.ID <> i.ID

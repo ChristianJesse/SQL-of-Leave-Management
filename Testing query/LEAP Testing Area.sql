@@ -155,21 +155,23 @@ select * from tblHR_PersonnelMaster WHERE DepartmentCode ='ZFAD' AND DTSeparated
 
 
 declare @pTypeHRMLQLeaveTypes  typeHRMLQLeaveTypes 
-INSERT INTO @pTypeHRMLQLeaveTypes (LeaveType,DTFrom,DTTo,Quota)
+INSERT INTO @pTypeHRMLQLeaveTypes (LeaveType,PeriodSpecific,DTFrom,DTTo,Quota,year)
 VALUES 
-('BL' ,'01/01/2026' ,'01/31/2026' ,'11');
+('UL',1,'01/01/2026' ,'08/31/2026' ,'11','2026');
 
---SELECT * FROM @typeLeaveForApproval
-EXEC spLEAP @pOption = 7
+SELECT * FROM @pTypeHRMLQLeaveTypes
+EXEC spLEAP @pOption = 42,@pYear='2026',@pLeaveCode='UL'
 ,@pTypeHRMLQLeaveTypes=@pTypeHRMLQLeaveTypes
-,@pDepartmentCode='ZFAD'
-,@pUnitCode=''
+,@pUserName='COORETO'
 
+select * from tblLEAPPeriod
 
 select * from tblLEAPLeaveTypeQuota 
 select * from tblEarnedLeaveQuota
 select * from tblHR_PersonnelLeaveBalance where  CreatedBy is not null
 select * from tblHR_LeaveEntGroup
+
+select * from tblleapp
 
 SELECT * FROM tblHR_MonthlyEntPerGroup WHERE LeaveCode = 'VL'
 select * from tblhr_periodschedule
@@ -237,4 +239,32 @@ SELECT * FROM tblLEAPBiometricServers
 SELECT * FROM tblLEAPInOutRecords where idnumber ='00002536'ORDER BY TimeInOut DESC
 
 EXEC spLEAP @pOption = 39,@pCode='BioInterval'
+
+
+
+
+sp_help tblPeriod
+
+select * from tblPeriod 
+select * from tblLEAPPeriod 
+select * from tblHR_PersonnelLeaveBalance where  CreatedBy is not null
+select * from tblHR_LeaveEntGroup
+
+select * from tblHR_PersonnelLeaveBalance where  CreatedBy is not null
+
+select top 100 * from NDESS_DEV03.dbo.tblHR_PersonnelLeaveBalance
+
+select * from tblHR_AbsentType
+
+sp_help tblHR_AbsentType
+
+
+
+
+
+
+
+
+
+
 

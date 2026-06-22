@@ -4,64 +4,62 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- =========================================
--- Check/Create tblLEAPLeaveTypeQuota
+-- Check/Create tblLEAPLeaveEntGroupDetails
 -- =========================================
-DECLARE @TableName SYSNAME = 'tblLEAPLeaveTypeQuota';
+DECLARE @TableName SYSNAME = 'tblLEAPLeaveEntGroupDetails';
 DECLARE @name NVARCHAR(128), @create_date DATETIME, @modify_date DATETIME;
 
-SELECT @name = name, @create_date = create_date, @modify_date = modify_date
+SELECT @name = name,
+       @create_date = create_date,
+       @modify_date = modify_date
 FROM sys.tables
 WHERE name = @TableName;
 
 PRINT 'BEFORE'
-SELECT 
+
+SELECT
     c.name AS [Column Name],
     ep.value AS [Description]
 FROM sys.columns c
 INNER JOIN sys.tables t ON c.object_id = t.object_id
-LEFT JOIN sys.extended_properties ep 
-    ON ep.major_id = t.object_id 
-    AND ep.minor_id = c.column_id 
-    AND ep.name = 'MS_Description'
+LEFT JOIN sys.extended_properties ep
+    ON ep.major_id = t.object_id
+   AND ep.minor_id = c.column_id
+   AND ep.name = 'MS_Description'
 WHERE t.name = @TableName
 ORDER BY c.column_id;
 
-IF OBJECT_ID(@TableName, 'U') IS NOT NULL
+IF OBJECT_ID(@TableName, 'U') IS NULL
 BEGIN
-    PRINT 'Table Name: ' + @name;
-    PRINT 'Date Created: ' + FORMAT(@create_date, 'MM/dd/yyyy HH:mm:ss');
-    PRINT 'Date Modified: ' + FORMAT(@modify_date, 'MM/dd/yyyy HH:mm:ss');
-    PRINT 'Table is already Existing: ' + @TableName;
-END
-
--- Create table if it does not exist
-IF OBJECT_ID(@TableName,'U') IS NULL
-BEGIN
-    CREATE TABLE dbo.tblLEAPLeaveTypeQuota
+    CREATE TABLE dbo.tblLEAPLeaveEntGroupDetails
     (
-        ID BIGINT IDENTITY(1,1) PRIMARY KEY,
-        LeaveCode VARCHAR(10) NOT NULL,
+        LGDID        INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        LGHID        INT NULL,
+        LeaveCode    VARCHAR(10) NULL,
+        LeaveInHours SMALLINT NULL,
+        LeaveInDays  DECIMAL(18,2) NULL,
 
-        PeriodSpecific BIT NOT NULL 
-            CONSTRAINT DF_tblLEAPLeaveTypeQuota_PeriodSpecific DEFAULT 0,
+        LeaveHours01 TINYINT NULL,
+        LeaveHours02 TINYINT NULL,
+        LeaveHours03 TINYINT NULL,
+        LeaveHours04 TINYINT NULL,
+        LeaveHours05 TINYINT NULL,
+        LeaveHours06 TINYINT NULL,
+        LeaveHours07 TINYINT NULL,
+        LeaveHours08 TINYINT NULL,
+        LeaveHours09 TINYINT NULL,
+        LeaveHours10 TINYINT NULL,
+        LeaveHours11 TINYINT NULL,
+        LeaveHours12 TINYINT NULL,
 
-        DTFrom DATETIME NOT NULL,
-        DTTo DATETIME NOT NULL,
-        Quota FLOAT NULL,
-
-        CreatedBy VARCHAR(55) NULL,
-        DTCreated DATETIME NOT NULL DEFAULT GETDATE(),
-        DTModified DATETIME NULL,
-        LastUpdateBy VARCHAR(55) NULL,
-
-        CONSTRAINT FK_tblLEAPLeaveTypeQuota_tblHR_AbsentType
-        FOREIGN KEY (LeaveCode)
-        REFERENCES dbo.tblHR_AbsentType(LeaveCode)
-    );
+        DateCreated  DATETIME NULL,
+        CreatedBy     VARCHAR(55) NULL
+    ) ON [PRIMARY];
 END
 
--- Fetch table info
-SELECT @name = name, @create_date = create_date, @modify_date = modify_date
+SELECT @name = name,
+       @create_date = create_date,
+       @modify_date = modify_date
 FROM sys.tables
 WHERE name = @TableName;
 
@@ -73,13 +71,14 @@ PRINT 'Date Modified: ' + FORMAT(@modify_date, 'MM/dd/yyyy HH:mm:ss');
 -- =========================================
 -- Table Description
 -- =========================================
-DECLARE @tableDescription NVARCHAR(4000) = 
-N'Stores leave type quota per period range including effective date range and assigned quota per leave code.';
+DECLARE @tableDescription NVARCHAR(4000) =
+N'Details of leave entitlement grouping including hours allocation per month and leave configuration.';
 
 IF EXISTS (
     SELECT 1
     FROM sys.extended_properties
     WHERE name = N'MS_Description'
+      AND class = 1
       AND major_id = OBJECT_ID(N'dbo.' + @TableName)
       AND minor_id = 0
 )
@@ -105,23 +104,33 @@ END
 DECLARE @columns TABLE (ColumnName NVARCHAR(128), Description NVARCHAR(4000));
 
 INSERT INTO @columns VALUES
-('ID','Primary key identity of leave quota record.'),
-('LeaveCode','Reference to leave type in tblHR_AbsentType.'),
-('PeriodSpecific','Indicates whether quota is period-based (0 = No, 1 = Yes).'),
-('DTFrom','Start date of quota validity period.'),
-('DTTo','End date of quota validity period.'),
-('Quota','Allocated quota value for the leave type.'),
-('CreatedBy','User who created the record.'),
-('DTCreated','Timestamp when the record was created.'),
-('DTModified','Timestamp when the record was last modified.'),
-('LastUpdateBy','User who last updated the record.');
+('LGDID', N'Primary key of leave entitlement group details.'),
+('LGHID', N'Foreign key reference to leave entitlement group header.'),
+('LeaveCode', N'Leave type code reference.'),
+('LeaveInHours', N'Total leave entitlement in hours.'),
+('LeaveInDays', N'Total leave entitlement in days.'),
+('LeaveHours01', N'Leave hours allocation for month 01.'),
+('LeaveHours02', N'Leave hours allocation for month 02.'),
+('LeaveHours03', N'Leave hours allocation for month 03.'),
+('LeaveHours04', N'Leave hours allocation for month 04.'),
+('LeaveHours05', N'Leave hours allocation for month 05.'),
+('LeaveHours06', N'Leave hours allocation for month 06.'),
+('LeaveHours07', N'Leave hours allocation for month 07.'),
+('LeaveHours08', N'Leave hours allocation for month 08.'),
+('LeaveHours09', N'Leave hours allocation for month 09.'),
+('LeaveHours10', N'Leave hours allocation for month 10.'),
+('LeaveHours11', N'Leave hours allocation for month 11.'),
+('LeaveHours12', N'Leave hours allocation for month 12.'),
+('DateCreated', N'Date the record was created.'),
+('CreatedBy', N'User who created the record.');
 
 DECLARE @ColumnName NVARCHAR(128), @Description NVARCHAR(4000);
 
-DECLARE ColumnCursor CURSOR FOR 
+DECLARE ColumnCursor CURSOR FOR
 SELECT ColumnName, Description FROM @columns;
 
 OPEN ColumnCursor;
+
 FETCH NEXT FROM ColumnCursor INTO @ColumnName, @Description;
 
 WHILE @@FETCH_STATUS = 0
@@ -161,16 +170,15 @@ DEALLOCATE ColumnCursor;
 -- =========================================
 -- Verify Descriptions
 -- =========================================
-PRINT 'Column Descriptions:';
 SELECT
     c.name AS [Column Name],
     ep.value AS [Description]
 FROM sys.columns c
 INNER JOIN sys.tables t ON c.object_id = t.object_id
-LEFT JOIN sys.extended_properties ep 
+LEFT JOIN sys.extended_properties ep
     ON ep.major_id = t.object_id
-    AND ep.minor_id = c.column_id
-    AND ep.name = 'MS_Description'
+   AND ep.minor_id = c.column_id
+   AND ep.name = 'MS_Description'
 WHERE t.name = @TableName
 ORDER BY c.column_id;
 GO
