@@ -30,23 +30,9 @@ BEGIN
 			('HR', 'CANCELLED'		,'CANCELLED'		, '0', @lMID, 'Cancelled Status'),
 			('HR', 'POSTED'			,'POSTED'			, '0', @lMID, 'Posted Status'),
 
-<<<<<<< HEAD
-			('HREmpG', 'PALA'		,'ALL'				, '0', @lMID, 'All Employee Group'),
-			('HREmpG', 'PALW'		,'WEEKLY'			, '0', @lMID, 'Weekly Employee Group'),
-			('HREmpG', 'PALM'		,'MONTHLY'			, '0', @lMID, 'Monthly Employee Group'),
-
-			('LeAPBalanceSettlement', 'BSForfeiture'	,'Forfeiture'		, '0', @lMID, 'Forfeiture leave balance'),
-			('LeAPBalanceSettlement', 'BSConversion'	,'Conversion'		, '0', @lMID, 'Leave Encashment'),
-			('LeAPBalanceSettlement', 'BSCarryOver'		,'Carry Over'		, '0', @lMID, 'Carry Over the leave balance to the next period'),
-			('LeAPBalanceSettlement', 'BSOthers'		,'Others'			, '0', @lMID, 'Other procedure'),
-
 			('LeAPLeavePeriodStatus', 'LPSOpen'			,'Open'		, '0', @lMID, 'Leave Period Open Status'),
-			('LeAPLeavePeriodStatus', 'LPSClosed'		,'Closed'	, '0', @lMID, 'Leave Period Closed Status')
-=======
-			('HREmpG', 'PALA'			,'ALL'			, '0', @lMID, 'All Employee Group'),
-			('HREmpG', 'PALW'			,'WEEKLY'		, '0', @lMID, 'Weekly Employee Group'),
-			('HREmpG', 'PALM'			,'MONTHLY'		, '0', @lMID, 'Monthly Employee Group'),
->>>>>>> a0ba6546f6c0a57c9717ea8ebc47654623e9946b
+			('LeAPLeavePeriodStatus', 'LPSClosed'		,'Closed'	, '0', @lMID, 'Leave Period Closed Status'),
+
 
 			('LeAPPeriod', 'H1', 'H1', '0', @lMID, 'First Half'),
 			('LeAPPeriod', 'H2', 'H2', '0', @lMID, 'Second Half'),
