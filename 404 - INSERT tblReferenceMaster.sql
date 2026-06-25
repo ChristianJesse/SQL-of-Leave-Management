@@ -1,5 +1,5 @@
 DECLARE @lMID INT; 
-SELECT @lMID = MID FROM tblModule WHERE ModuleCode = 'HR';
+SELECT @lMID = MID FROM tblModule WHERE ModuleCode = 'LeAP';
 
 DECLARE @lUser VARCHAR(50) = ORIGINAL_LOGIN();
 DECLARE @lTimeStamp DATETIME = GETDATE();
@@ -37,7 +37,11 @@ BEGIN
 			('LeAPBalanceSettlement', 'BSForfeiture'	,'Forfeiture'		, '0', @lMID, 'Forfeiture leave balance'),
 			('LeAPBalanceSettlement', 'BSConversion'	,'Conversion'		, '0', @lMID, 'Leave Encashment'),
 			('LeAPBalanceSettlement', 'BSCarryOver'		,'Carry Over'		, '0', @lMID, 'Carry Over the leave balance to the next period'),
-			('LeAPBalanceSettlement', 'BSOthers'		,'Others'			, '0', @lMID, 'Other procedure')
+			('LeAPBalanceSettlement', 'BSOthers'		,'Others'			, '0', @lMID, 'Other procedure'),
+
+			('LeAPLeavePeriodStatus', 'LPSOpen'			,'Open'		, '0', @lMID, 'Leave Period Open Status'),
+			('LeAPLeavePeriodStatus', 'LPSClosed'		,'Closed'	, '0', @lMID, 'Leave Period Closed Status')
+
 			;
 
 

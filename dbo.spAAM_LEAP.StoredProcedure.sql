@@ -58,7 +58,7 @@ BEGIN
 
 
 	SET NOCOUNT ON;
-		SELECT @lMID = MID from tblModule WHERE ModuleCode = 'HR'
+		SELECT @lMID = MID from tblModule WHERE ModuleCode = 'LeAP'
 
 
 	IF @pOption = 1 -- GET ALL LEAVE FOR APPROVAL

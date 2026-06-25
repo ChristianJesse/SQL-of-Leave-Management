@@ -33,8 +33,9 @@ IF OBJECT_ID(@TableName, 'U') IS NULL
 BEGIN
     CREATE TABLE dbo.tblLEAPLeavePeriodDetails
     (
+
         LPDID        INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-        LPHID        VARCHAR(10) NULL,
+        LPHID        INT NULL,
         IDNumber     VARCHAR(10) NULL,
         Quota        FLOAT NULL,
         LeaveBalance FLOAT NULL,
@@ -48,7 +49,10 @@ BEGIN
         LockedOn     DATETIME NULL,
         SettledBy    VARCHAR(55) NULL,
         DTSetteled   DATETIME NULL
-    ) ON [PRIMARY];
+      CONSTRAINT FK_tblLEAPLeavePeriodDetails_tblLEAPLeavePeriodHeader
+        FOREIGN KEY (LPHID)
+        REFERENCES dbo.tblLEAPLeavePeriodHeader (LPHID)
+) ON [PRIMARY];
 END
 
 SELECT @name = name,

@@ -1,6 +1,6 @@
 
-CREATE OR ALTER TRIGGER trg_tblLEAPPeriod_ValidateRange
-ON tblLEAPPeriod
+CREATE OR ALTER TRIGGER trtblLEAPLeavePeriodHeader
+ON tblLEAPLeavePeriodHeader
 AFTER INSERT, UPDATE
 AS
 BEGIN
@@ -12,10 +12,10 @@ BEGIN
     IF EXISTS (
         SELECT 1
         FROM inserted i
-        JOIN tblLEAPPeriod t
+        JOIN tblLEAPLeavePeriodHeader t
             ON  t.LeaveCode      = i.LeaveCode
             AND t.PeriodSpecific = i.PeriodSpecific
-            AND t.ID <> i.ID
+            AND t.LPHID <> i.LPHID
             AND t.DTFrom <= i.DTFrom
             AND t.DTTo   >= i.DTTo
     )
@@ -23,12 +23,12 @@ BEGIN
         SELECT @Msg =
             'Invalid Leave Type Quota: Range is fully covered by existing record(s). ID(s): ' +
             STUFF((
-                SELECT ', ' + CAST(t.ID AS NVARCHAR)
+                SELECT ', ' + CAST(t.LPHID AS NVARCHAR)
                 FROM inserted i
-                JOIN tblLEAPPeriod t
+                JOIN tblLEAPLeavePeriodHeader t
                     ON  t.LeaveCode      = i.LeaveCode
                     AND t.PeriodSpecific = i.PeriodSpecific
-                    AND t.ID <> i.ID
+                    AND t.LPHID <> i.LPHID
                     AND t.DTFrom <= i.DTFrom
                     AND t.DTTo   >= i.DTTo
                 FOR XML PATH(''), TYPE

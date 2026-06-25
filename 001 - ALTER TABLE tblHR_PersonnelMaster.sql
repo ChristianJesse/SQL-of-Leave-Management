@@ -4,44 +4,45 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 -- =========================================
--- Check/Create Column GroupID in tblHR_PersonnelMaster
+-- Check/Create Column LGHID in tblHR_PersonnelMaster
 -- =========================================
 IF NOT EXISTS (
     SELECT 1
     FROM sys.columns
-    WHERE Name = N'GroupID'
+    WHERE Name = N'LGHID'
       AND Object_ID = Object_ID(N'tblHR_PersonnelMaster')
 )
 BEGIN
     ALTER TABLE tblHR_PersonnelMaster
-    ADD GroupID smallint NULL;
+    ADD LGHID INT NULL;
 
-    PRINT 'Column GroupID added to tblHR_PersonnelMaster';
+    PRINT 'Column LGHID added to tblHR_PersonnelMaster';
 END
 ELSE
 BEGIN
-    PRINT 'Column GroupID already exists in tblHR_PersonnelMaster';
+    PRINT 'Column LGHID already exists in tblHR_PersonnelMaster';
 END
 GO
 
 -- =========================================
--- Check/Create Foreign Key FK_tblHR_PersonnelMaster_tblHR_LeaveEntGroup
+-- Check/Create Foreign Key
+-- FK_tblHR_PersonnelMaster_tblLEAPLeaveEntGroupHeader
 -- =========================================
 IF NOT EXISTS (
     SELECT 1
     FROM sys.foreign_keys
-    WHERE name = 'FK_tblHR_PersonnelMaster_tblHR_LeaveEntGroup'
+    WHERE name = 'FK_tblHR_PersonnelMaster_tblLEAPLeaveEntGroupHeader'
 )
 BEGIN
     ALTER TABLE tblHR_PersonnelMaster
-    ADD CONSTRAINT FK_tblHR_PersonnelMaster_tblHR_LeaveEntGroup
-        FOREIGN KEY (GroupID)
-        REFERENCES tblHR_LeaveEntGroup (GroupID);
+    ADD CONSTRAINT FK_tblHR_PersonnelMaster_tblLEAPLeaveEntGroupHeader
+        FOREIGN KEY (LGHID)
+        REFERENCES tblLEAPLeaveEntGroupHeader (LGHID);
 
-    PRINT 'Foreign Key FK_tblHR_PersonnelMaster_tblHR_LeaveEntGroup created';
+    PRINT 'Foreign Key FK_tblHR_PersonnelMaster_tblLEAPLeaveEntGroupHeader created';
 END
 ELSE
 BEGIN
-    PRINT 'Foreign Key FK_tblHR_PersonnelMaster_tblHR_LeaveEntGroup already exists';
+    PRINT 'Foreign Key FK_tblHR_PersonnelMaster_tblLEAPLeaveEntGroupHeader already exists';
 END
 GO

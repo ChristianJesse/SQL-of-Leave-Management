@@ -35,10 +35,9 @@ BEGIN
     CREATE TABLE dbo.tblLEAPLeavePeriodHeader
     (
         LPHID           INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-        PID             VARCHAR(10) NULL,
-        LGHID           VARCHAR(10) NULL,
+        PID             INT NULL,
         LeaveCode       VARCHAR(10) NOT NULL,
-        ValidationType  BIT NULL,
+        PeriodSpecific  BIT NULL,
         PQuota			Float NULL,
         [Year]          VARCHAR(4) NULL,
         DTFrom          DATE NULL,
@@ -107,9 +106,8 @@ DECLARE @columns TABLE
 INSERT INTO @columns VALUES
 ('LPHID', N'Primary key of leave period header.'),
 ('PID', N'Reference period identifier.'),
-('LGHID', N'Reference leave entitlement group header.'),
 ('LeaveCode', N'Reference leave code.'),
-('ValidationType', N' 1 = Earned. 0 = Period Specific'),
+('PeriodSpecific', N' 1 = Earned. 0 = Period Specific'),
 ('PQuota', N'Period Specific leave type quota'),
 ('Year', N'Applicable year of the leave period.'),
 ('DTFrom', N'Start date of the leave period.'),

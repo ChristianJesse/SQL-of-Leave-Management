@@ -23,6 +23,8 @@ select * from tblHR_AbsentType
 
 SP_HELP tblHR_AbsentType
 
+	SELECT * FROM tblReferenceMaster
+	SELECT * FROM tblReferenceMaster where RID >= 177
 
 declare @typeLeaveForApproval  typeLeaveForApproval 
 INSERT INTO @typeLeaveForApproval (LeaveType,DTLeave,LeaveHrsFrom,LeaveHrsTo,WorkHrs,ReasonCode,DTNotice,FileNotice,ReasonDesc)
@@ -155,14 +157,16 @@ select * from tblHR_PersonnelMaster WHERE DepartmentCode ='ZFAD' AND DTSeparated
 
 
 declare @pTypeHRMLQLeaveTypes  typeHRMLQLeaveTypes 
-INSERT INTO @pTypeHRMLQLeaveTypes (LeaveType,PeriodSpecific,DTFrom,DTTo,Quota,year)
+INSERT INTO @pTypeHRMLQLeaveTypes (ID,PeriodSpecific,year,LeaveType,DTFrom,DTTo,Quota)
 VALUES 
-('UL',1,'01/01/2026' ,'08/31/2026' ,'11','2026');
+(2,'1','2026','VL','2026-01-01','2026-06-30',0);
 
 SELECT * FROM @pTypeHRMLQLeaveTypes
-EXEC spLEAP @pOption = 42,@pYear='2026',@pLeaveCode='UL'
+EXEC spLEAP @pOption = 41,@pYear='2026',@pLeaveCode='SL'
 ,@pTypeHRMLQLeaveTypes=@pTypeHRMLQLeaveTypes
 ,@pUserName='COORETO'
+,@pPID ='10'
+,@pStatus ='oPEN'
 
 select * from tblLEAPPeriod
 

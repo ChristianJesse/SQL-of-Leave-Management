@@ -25,13 +25,13 @@ MERGE tblConfiguration AS T
 VALUES ('LEAP', 'BioLookBack', 'LeAP Biometric Service - LookBackMinutes On the first run we read a small history window so we can catch recent punches to Look Back', '1440', 1, GETDATE(), ORIGINAL_LOGIN());
 
 
-MERGE tblConfiguration AS T 
-	USING (SELECT 'LEAP' AS Category, 'RetirementAge' AS Code) AS S ON T.Category = S.Category AND T.Code = S.Code 
-	WHEN MATCHED 
-		THEN 
-		UPDATE SET Description = 'Age retirement of the emplyee', Value = '60', isActive = 1, CreationDate = GETDATE(), CreatedBy = ORIGINAL_LOGIN() 
-	WHEN NOT MATCHED THEN INSERT (Category, Code, Description, Value, isActive, CreationDate, CreatedBy) 
-VALUES ('LEAP', 'RetirementAge', 'Age retirement of the emplyee', '60', 1, GETDATE(), ORIGINAL_LOGIN());
+--MERGE tblConfiguration AS T 
+--	USING (SELECT 'LEAP' AS Category, 'RetirementAge' AS Code) AS S ON T.Category = S.Category AND T.Code = S.Code 
+--	WHEN MATCHED 
+--		THEN 
+--		UPDATE SET Description = 'Age retirement of the emplyee', Value = '60', isActive = 1, CreationDate = GETDATE(), CreatedBy = ORIGINAL_LOGIN() 
+--	WHEN NOT MATCHED THEN INSERT (Category, Code, Description, Value, isActive, CreationDate, CreatedBy) 
+--VALUES ('LEAP', 'RetirementAge', 'Age retirement of the emplyee', '60', 1, GETDATE(), ORIGINAL_LOGIN());
 
 
 SELECT * FROM tblConfiguration where Category ='LEAP'
