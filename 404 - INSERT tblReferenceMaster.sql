@@ -32,8 +32,18 @@ BEGIN
 
 			('HREmpG', 'PALA'			,'ALL'			, '0', @lMID, 'All Employee Group'),
 			('HREmpG', 'PALW'			,'WEEKLY'		, '0', @lMID, 'Weekly Employee Group'),
-			('HREmpG', 'PALM'			,'MONTHLY'		, '0', @lMID, 'Monthly Employee Group')
+			('HREmpG', 'PALM'			,'MONTHLY'		, '0', @lMID, 'Monthly Employee Group'),
 
+			('LeAPPeriod', 'H1', 'H1', '0', @lMID, 'First Half'),
+			('LeAPPeriod', 'H2', 'H2', '0', @lMID, 'Second Half'),
+			('LeAPPeriod', 'HY', 'HY', '0', @lMID, 'Whole Year'),
+
+			('LeAPLeaveTypeProRataC',	'N', 'None',		'0',	@lMID,	'Pro-Rata Computation None'),
+			('LeAPLeaveTypeProRataC',	'P', 'Pro-rated',	'0',	@lMID,	'Pro-Rata Computation Pro-Rated'),
+			('LeAPLeaveTypeProRataC',	'E', 'Earned',		'0',	@lMID,	'Pro-Rata Computation Earned'),
+
+			('LeAPLeaveTypeUnit',	'D',	'Days',		'0', @lMID,'Leave Type Unit for Filing and Notice - Days'),
+			('LeAPLeaveTypeUnit',	'H',	'Hours',	'0', @lMID,'Leave Type Unit for Filing and Notice - Hours')
 			;
 
 

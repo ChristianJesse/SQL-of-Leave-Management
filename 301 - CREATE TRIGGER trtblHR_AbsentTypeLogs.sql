@@ -10,9 +10,9 @@ BEGIN
 
     /* INSERT */
     INSERT INTO tblHR_AbsentTypeLogs (
-        Activity, LeaveCode, LeaveDesc, AbsentType,
-        ChargeToLeaved, EndDate, FillingNotice, WithQuota,
-        LeavedColor, ChargeToLeaveType,
+        Activity, LeaveCode, LeaveDesc, AbsentType, ChargeToLeave, EndDate, 
+        Filing, FilingUnit, Notice, NoticeUnit, WithQuota, LeaveColor, ChargeToLeaveType,
+        DateSpecific, PeriodSpecific, EarnedLeave, DateRegularized, DateSeparated,
         Active, CreatedBy, DTCreted, LastUpdateBy, DTModified
     )
     SELECT 
@@ -20,12 +20,20 @@ BEGIN
         i.LeaveCode,
         i.LeaveDesc,
         i.AbsentType,
-        i.ChargeToLeaved,
+        i.ChargeToLeave,
         i.EndDate,
-        i.FillingNotice,
+        i.Filing,
+        i.FilingUnit,
+        i.Notice,
+        i.NoticeUnit,
         i.WithQuota,
-        i.LeavedColor,
+        i.LeaveColor,
         i.ChargeToLeaveType,
+        i.DateSpecific,
+        i.PeriodSpecific,
+        i.EarnedLeave,
+        i.DateRegularized,
+        i.DateSeparated,
         1,                  -- default Active
         @User,
         @Now,
@@ -37,9 +45,9 @@ BEGIN
 
     /* UPDATE */
     INSERT INTO tblHR_AbsentTypeLogs (
-        Activity, LeaveCode, LeaveDesc, AbsentType,
-        ChargeToLeaved, EndDate, FillingNotice, WithQuota,
-        LeavedColor, ChargeToLeaveType,
+        Activity, LeaveCode, LeaveDesc, AbsentType, ChargeToLeave, EndDate, 
+        Filing, FilingUnit, Notice, NoticeUnit, WithQuota, LeaveColor, ChargeToLeaveType,
+        DateSpecific, PeriodSpecific, EarnedLeave, DateRegularized, DateSeparated,
         Active, CreatedBy, DTCreted, LastUpdateBy, DTModified
     )
     SELECT 
@@ -47,12 +55,20 @@ BEGIN
         i.LeaveCode,
         i.LeaveDesc,
         i.AbsentType,
-        i.ChargeToLeaved,
+        i.ChargeToLeave,
         i.EndDate,
-        i.FillingNotice,
+        i.Filing,
+        i.FilingUnit,
+        i.Notice,
+        i.NoticeUnit,
         i.WithQuota,
-        i.LeavedColor,
+        i.LeaveColor,
         i.ChargeToLeaveType,
+        i.DateSpecific,
+        i.PeriodSpecific,
+        i.EarnedLeave,
+        i.DateRegularized,
+        i.DateSeparated,
         1,
         NULL,
         NULL,
@@ -63,9 +79,9 @@ BEGIN
 
     /* DELETE */
     INSERT INTO tblHR_AbsentTypeLogs (
-        Activity, LeaveCode, LeaveDesc, AbsentType,
-        ChargeToLeaved, EndDate, FillingNotice, WithQuota,
-        LeavedColor, ChargeToLeaveType,
+        Activity, LeaveCode, LeaveDesc, AbsentType, ChargeToLeave, EndDate, 
+        Filing, FilingUnit, Notice, NoticeUnit, WithQuota, LeaveColor, ChargeToLeaveType,
+        DateSpecific, PeriodSpecific, EarnedLeave, DateRegularized, DateSeparated,
         Active, CreatedBy, DTCreted, LastUpdateBy, DTModified
     )
     SELECT 
@@ -73,12 +89,20 @@ BEGIN
         d.LeaveCode,
         d.LeaveDesc,
         d.AbsentType,
-        d.ChargeToLeaved,
+        d.ChargeToLeave,
         d.EndDate,
-        d.FillingNotice,
+        d.Filing,
+        d.FilingUnit,
+        d.Notice,
+        d.NoticeUnit,
         d.WithQuota,
-        d.LeavedColor,
+        d.LeaveColor,
         d.ChargeToLeaveType,
+        d.DateSpecific,
+        d.PeriodSpecific,
+        d.EarnedLeave,
+        d.DateRegularized,
+        d.DateSeparated,
         0,          -- mark inactive on delete
         NULL,
         NULL,
@@ -90,20 +114,3 @@ BEGIN
 
 END;
 GO
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
