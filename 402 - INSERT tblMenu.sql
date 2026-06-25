@@ -73,10 +73,14 @@ BEGIN TRY
         (NULL, 1, 'MyTeam', '../LeAP/LeAPMyTeam.aspx', 1, 'SCM', 1, 0, @lMID),
         (NULL, 1, 'Maintenance', '', 2, 'SCM', 1, 0, @lMID),
 <<<<<<< HEAD
+<<<<<<< HEAD
         (NULL, 1, 'Post Approved Leave', '../LeAP/LeAPPostApprovedLeaves.aspx', 3, 'SCM', 1, 0, @lMID),
         (NULL, 1, 'Leave Balance Settlement', '../LeAP/LeAPLeaveBalanceSettlement.aspx', 4, 'SCM', 1, 0, @lMID),
 =======
 		(NULL, 1, 'Period Start', '', 3, 'SCM', 1, 0, @lMID),
+=======
+		(NULL, 1, 'Period Start/Close', '', 3, 'SCM', 1, 0, @lMID),
+>>>>>>> a0ba6546f6c0a57c9717ea8ebc47654623e9946b
         (NULL, 1, 'Post Approved Leave', '../LeAP/LeAPPostApprovedLeaves.aspx', 4, 'SCM', 1, 0, @lMID),
         (NULL, 1, 'Leave Balance Settlement', '../LeAP/LeAPLeaveBalanceSettlement.aspx', 5, 'SCM', 1, 0, @lMID),
 >>>>>>> 973762da28887374ba1f1bf693d5697c076e0b77
@@ -86,11 +90,11 @@ BEGIN TRY
 		(NULL, 4, 'Periods', '../LeAP/LeAPPeriodMaintenance.aspx',			1, 'SCM', 1, 0, @lMID),
 		(NULL, 4, 'Leave Quota', '../LeAP/LeAPLeaveQuotaMaintenance.aspx',	2, 'SCM', 1, 0, @lMID),
 
-        (NULL, 3, 'Leaves', '../LeAP/LeAPLeaveMaintenance.aspx',			1, 'SCM', 1, 0, @lMID),
+        (NULL, 3, 'Leave Types', '../LeAP/LeAPLeaveMaintenance.aspx',			1, 'SCM', 1, 0, @lMID),
         (NULL, 3, 'Leave Reasons', '../LeAP/LeAPReasonMaintenance.aspx',	2, 'SCM', 1, 0, @lMID),
-        (NULL, 3, 'Schedules', '../LeAP/LeAPScheduleMaintenance.aspx',		3, 'SCM', 1, 0, @lMID),
+        (NULL, 3, 'Work Schedules', '../LeAP/LeAPScheduleMaintenance.aspx',		3, 'SCM', 1, 0, @lMID),
         (NULL, 3, 'Holidays', '../LeAP/LeAPHolidayMaintenance.aspx',		4, 'SCM', 1, 0, @lMID),
-        (NULL, 3, 'Leave Group', '../LeAP/LeAPLeaveGroupMaintenance.aspx',	5, 'SCM', 1, 0, @lMID);
+        (NULL, 3, 'Leave Groups', '../LeAP/LeAPLeaveGroupMaintenance.aspx',	5, 'SCM', 1, 0, @lMID);
 		
     -- =========================================
     -- Cursor

@@ -33,6 +33,14 @@ VALUES ('LEAP', 'BioLookBack', 'LeAP Biometric Service - LookBackMinutes On the 
 --	WHEN NOT MATCHED THEN INSERT (Category, Code, Description, Value, isActive, CreationDate, CreatedBy) 
 --VALUES ('LEAP', 'RetirementAge', 'Age retirement of the emplyee', '60', 1, GETDATE(), ORIGINAL_LOGIN());
 
+MERGE tblConfiguration AS T 
+	USING (SELECT 'LEAP' AS Category, 'LeaveGroup' AS Code) AS S ON T.Category = S.Category AND T.Code = S.Code 
+	WHEN MATCHED 
+		THEN 
+		UPDATE SET Description = 'Use to compute the Leave in Days', Value = '8', isActive = 1, CreationDate = GETDATE(), CreatedBy = ORIGINAL_LOGIN() 
+	WHEN NOT MATCHED THEN INSERT (Category, Code, Description, Value, isActive, CreationDate, CreatedBy) 
+VALUES ('LEAP', 'LeaveGroup', 'Use to compute the Leave in Days', '8', 1, GETDATE(), ORIGINAL_LOGIN());
+
 
 SELECT * FROM tblConfiguration where Category ='LEAP'
 

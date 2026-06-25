@@ -30,17 +30,20 @@ IF OBJECT_ID(@TableName, 'U') IS NULL
 BEGIN
     CREATE TABLE dbo.tblLEAPLeaveReason
     (	
-        [ReasonID]            INT IDENTITY(1,1) PRIMARY KEY,
+        --[ReasonID]            INT IDENTITY(1,1) PRIMARY KEY,
 
         -- ? UNIQUE CONSTRAINT ADDED HERE
         [ReasonCode]          VARCHAR(10) NOT NULL 
-                             CONSTRAINT UQ_tblLEAPLeaveReason_ReasonCode UNIQUE,
+                             CONSTRAINT UQ_tblLEAPLeaveReason_ReasonCode PRIMARY KEY,
 
         [ReasonDescription]   VARCHAR(MAX) NULL,
-        [NoticePeriod]        TINYINT NOT NULL,
+		[Filing]        TINYINT NOT NULL,
+		[FilingUnit]			INT NOT NULL,
+		[Notice]        TINYINT NOT NULL,
+        [NoticeUnit]			INT NOT NULL,
         [Remarks]             VARCHAR(MAX) NULL,
         [isActive]            BIT NOT NULL,
-        [LeaveCode]           VARCHAR(10) NULL,
+        --[LeaveCode]           VARCHAR(10) NULL,
         [DTCreated]           DATETIME NULL,
         [CreatedBy]           VARCHAR(55) NULL,
         [DTModified]          DATETIME NULL,
@@ -51,15 +54,15 @@ END
 -- =========================================
 -- Optional FK (SAFE)
 -- =========================================
-IF NOT EXISTS (
-    SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_tblLEAPLeaveReason_LeaveCode'
-)
-BEGIN
-    ALTER TABLE dbo.tblLEAPLeaveReason
-    ADD CONSTRAINT FK_tblLEAPLeaveReason_LeaveCode
-    FOREIGN KEY (LeaveCode)
-    REFERENCES dbo.tblHR_AbsentType(LeaveCode);
-END
+--IF NOT EXISTS (
+--    SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_tblLEAPLeaveReason_LeaveCode'
+--)
+--BEGIN
+--    ALTER TABLE dbo.tblLEAPLeaveReason
+--    ADD CONSTRAINT FK_tblLEAPLeaveReason_LeaveCode
+--    FOREIGN KEY (LeaveCode)
+--    REFERENCES dbo.tblHR_AbsentType(LeaveCode);
+--END
 
 SELECT @name = name, @create_date = create_date, @modify_date = modify_date
 FROM sys.tables
@@ -106,10 +109,13 @@ END
 DECLARE @columns TABLE (ColumnName NVARCHAR(128), Description NVARCHAR(4000));
 
 INSERT INTO @columns VALUES
-('ReasonID', N'Primary key identifier for the leave reason.'),
+--('ReasonID', N'Primary key identifier for the leave reason.'),
 ('ReasonCode', N'Unique code representing the leave reason.'),
 ('ReasonDescription', N'Description of the leave reason.'),
-('NoticePeriod', N'Required notice period (in days) before filing leave.'),
+('Filing',N'Filing Period of the leave reason'),
+('FilingUnit',N'Units for Filing (Days or Hours)'),
+('Notice', N'Required notice period (in days) before filing leave.'),
+('NoticeUnit',N'Units for Notice (Days or Hours)'),
 ('Remarks', N'Additional remarks or notes for the leave reason.'),
 ('isActive', N'Indicates if the leave reason is active (1 = Active, 0 = Inactive).'),
 ('LeaveCode', N'Associated leave type code.'),

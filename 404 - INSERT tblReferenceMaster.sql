@@ -30,6 +30,7 @@ BEGIN
 			('HR', 'CANCELLED'		,'CANCELLED'		, '0', @lMID, 'Cancelled Status'),
 			('HR', 'POSTED'			,'POSTED'			, '0', @lMID, 'Posted Status'),
 
+<<<<<<< HEAD
 			('HREmpG', 'PALA'		,'ALL'				, '0', @lMID, 'All Employee Group'),
 			('HREmpG', 'PALW'		,'WEEKLY'			, '0', @lMID, 'Weekly Employee Group'),
 			('HREmpG', 'PALM'		,'MONTHLY'			, '0', @lMID, 'Monthly Employee Group'),
@@ -41,7 +42,22 @@ BEGIN
 
 			('LeAPLeavePeriodStatus', 'LPSOpen'			,'Open'		, '0', @lMID, 'Leave Period Open Status'),
 			('LeAPLeavePeriodStatus', 'LPSClosed'		,'Closed'	, '0', @lMID, 'Leave Period Closed Status')
+=======
+			('HREmpG', 'PALA'			,'ALL'			, '0', @lMID, 'All Employee Group'),
+			('HREmpG', 'PALW'			,'WEEKLY'		, '0', @lMID, 'Weekly Employee Group'),
+			('HREmpG', 'PALM'			,'MONTHLY'		, '0', @lMID, 'Monthly Employee Group'),
+>>>>>>> a0ba6546f6c0a57c9717ea8ebc47654623e9946b
 
+			('LeAPPeriod', 'H1', 'H1', '0', @lMID, 'First Half'),
+			('LeAPPeriod', 'H2', 'H2', '0', @lMID, 'Second Half'),
+			('LeAPPeriod', 'HY', 'HY', '0', @lMID, 'Whole Year'),
+
+			('LeAPLeaveTypeProRataC',	'N', 'None',		'0',	@lMID,	'Pro-Rata Computation None'),
+			('LeAPLeaveTypeProRataC',	'P', 'Pro-rated',	'0',	@lMID,	'Pro-Rata Computation Pro-Rated'),
+			('LeAPLeaveTypeProRataC',	'E', 'Earned',		'0',	@lMID,	'Pro-Rata Computation Earned'),
+
+			('LeAPLeaveTypeUnit',	'D',	'Days',		'0', @lMID,'Leave Type Unit for Filing and Notice - Days'),
+			('LeAPLeaveTypeUnit',	'H',	'Hours',	'0', @lMID,'Leave Type Unit for Filing and Notice - Hours')
 			;
 
 
